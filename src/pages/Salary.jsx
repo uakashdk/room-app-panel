@@ -85,6 +85,10 @@ const GLOSS = `
   background-image: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.07) 49%, rgba(0,0,0,.16) 51%, rgba(0,0,0,.04) 100%);
 }
 .salx .btn.ghost::before { background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); }
+/* align the filter bar: inputs and buttons on the same level */
+.salx .salbar { align-items: center; }
+.salx .salbar > * { margin-top: 0 !important; margin-bottom: 0 !important; align-self: center; }
+.salx .salbar .btn { height: 44px; padding-top: 0; padding-bottom: 0; display: inline-flex; align-items: center; }
 `;
 
 /** Weekly salary approval: the server makes one record per host every Monday; a Super admin approves or rejects them (one by one or many at once). */
@@ -194,7 +198,7 @@ export default function Salary({ role }) {
       {error && <div className="error box">{error}</div>}
       {note && <div className="ok box">{note}</div>}
 
-      <div className="card form" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+      <div className="card form salbar" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <input placeholder="Week, e.g. 2026-W47 (empty = all weeks)" value={week} onChange={(e) => setWeek(e.target.value.trim())} style={{ width: 260 }} />
         <input placeholder="Search host, ID or agency" value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: 240 }} />
         <button className="btn ghost sm" onClick={load} disabled={loading}>Refresh</button>
