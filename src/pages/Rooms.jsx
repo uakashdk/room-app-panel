@@ -418,20 +418,3 @@ export default function Rooms({ staff }) {
     </div>
   );
 }
-
-// export default function Rooms({ staff }) {
-//   return (
-//     <CrudPage
-//       staff={staff}
-//       title="Rooms"
-//       noun="room"
-//       collectionName="rooms"
-//       fields={fields}
-//       columns={columns}
-//       defaults={{ isLive: true, category: 'popular', theme: 'violet' }}
-//       sortFn={(a, b) => (b.listeners || 0) - (a.listeners || 0)}
-//       samples={samples}
-//       hint="These rooms appear on the Home screen of the app. Real rooms created by users and voice come in the voice-room step."
-//     />
-//   );
-// }

@@ -308,48 +308,4 @@ export default function Reports({ staff }) {
       </div>
     </div>
   );
-
-  // return (
-  //   <>
-  //     <div className="head">
-  //       <div>
-  //         <h1>Reports</h1>
-  //         <p className="muted small">Open reports from users. Delete the post, or dismiss the report if the post is fine.</p>
-  //       </div>
-  //       <button className="btn ghost" onClick={load}>Refresh</button>
-  //     </div>
-  //     {error && <div className="error box">{error}</div>}
-  //     {notice && <div className="box" style={{ color: '#7ff0b8', background: '#10261c', borderColor: '#2c6b4c' }}>{notice}</div>}
-
-  //     <div className="card table-wrap">
-  //       <table>
-  //         <thead>
-  //           <tr><th>Type</th><th>Reported content</th><th>Reason</th><th>Reported</th><th>Actions</th></tr>
-  //         </thead>
-  //         <tbody>
-  //           {loading && <tr><td colSpan="5" className="muted pad">Loading...</td></tr>}
-  //           {!loading && rows.length === 0 && <tr><td colSpan="5" className="muted pad">No open reports. Everything is clean.</td></tr>}
-  //           {!loading && rows.map((r) => (
-  //             <tr key={r.id}>
-  //               <td><span className="pill plain">{r.type}</span></td>
-  //               <td style={{ maxWidth: 360 }}>
-  //                 {r.type === 'post'
-  //                   ? (r.postText ? <><b>{r.postAuthor}:</b> {r.postText}</> : <span className="muted">Post already deleted</span>)
-  //                   : <span className="mono small">{r.targetId}</span>}
-  //               </td>
-  //               <td><b>{r.reason}</b></td>
-  //               <td className="muted small">{fmt(r.createdAt)}</td>
-  //               <td>
-  //                 <div className="acts">
-  //                   {r.type === 'post' && r.postText && <button className="btn sm danger" onClick={() => resolve(r, 'resolved', true)}>Delete post</button>}
-  //                   <button className="btn sm ghost" onClick={() => resolve(r, 'dismissed', false)}>Dismiss</button>
-  //                 </div>
-  //               </td>
-  //             </tr>
-  //           ))}
-  //         </tbody>
-  //       </table>
-  //     </div>
-  //   </>
-  // );
 }

@@ -458,20 +458,3 @@ export default function Banners({ staff }) {
     </div>
   );
 }
-
-// export default function Banners({ staff }) {
-//   return (
-//     <CrudPage
-//       staff={staff}
-//       title="Banners"
-//       noun="banner"
-//       collectionName="banners"
-//       fields={fields}
-//       columns={columns}
-//       defaults={{ active: true, theme: 'purple', order: 1 }}
-//       sortFn={(a, b) => (a.order || 0) - (b.order || 0)}
-//       samples={samples}
-//       hint="Banners slide at the top of the Home screen. If you add none, the app shows a default banner."
-//     />
-//   );
-// }

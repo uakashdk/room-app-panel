@@ -351,40 +351,4 @@ export default function Posts({ staff }) {
       </div>
     </div>
   );
-
-  // return (
-  //   <>
-  //     <div className="head">
-  //       <div>
-  //         <h1>Posts</h1>
-  //         <p className="muted small">The latest 50 posts from the Feed. Delete posts that break the rules.</p>
-  //       </div>
-  //       <button className="btn ghost" onClick={load}>Refresh</button>
-  //     </div>
-  //     {error && <div className="error box">{error}</div>}
-  //     {notice && <div className="box" style={{ color: '#7ff0b8', background: '#10261c', borderColor: '#2c6b4c' }}>{notice}</div>}
-
-  //     <div className="card table-wrap">
-  //       <table>
-  //         <thead>
-  //           <tr><th>Author</th><th>Post</th><th>Likes</th><th>Comments</th><th>Posted</th><th>Actions</th></tr>
-  //         </thead>
-  //         <tbody>
-  //           {loading && <tr><td colSpan="6" className="muted pad">Loading...</td></tr>}
-  //           {!loading && rows.length === 0 && <tr><td colSpan="6" className="muted pad">No posts yet. Posts created in the app appear here.</td></tr>}
-  //           {!loading && rows.map((p) => (
-  //             <tr key={p.id}>
-  //               <td><b>{p.authorName}</b></td>
-  //               <td style={{ maxWidth: 380 }}>{p.text}</td>
-  //               <td>{p.likeCount ?? 0}</td>
-  //               <td>{p.commentCount ?? 0}</td>
-  //               <td className="muted small">{fmt(p.createdAt)}</td>
-  //               <td><button className="btn sm danger" onClick={() => remove(p)}>Delete</button></td>
-  //             </tr>
-  //           ))}
-  //         </tbody>
-  //       </table>
-  //     </div>
-  //   </>
-  // );
 }

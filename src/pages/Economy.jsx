@@ -291,38 +291,4 @@ export default function Economy({ role }) {
       </div>
     </div>
   );
-
-  // return (
-  //   <>
-  //     <div className="head"><h1>Economy settings</h1></div>
-  //     <p className="muted small">
-  //       The money-to-coins rate. Packages use it to fill in the coins automatically.
-  //       {!canEdit && ' You can only view this page. A Super admin can change the rates.'}
-  //     </p>
-  //     {error && <div className="error box">{error}</div>}
-  //     {ok && <div className="box" style={{ color: 'var(--ok)' }}>{ok}</div>}
-
-  //     <form className="card form" onSubmit={save}>
-  //       <div className="grid">
-  //         {FIELDS.map((f) => (
-  //           <label key={f.key} className="field">
-  //             <span>{f.label}</span>
-  //             <input
-  //               type="number" step="any" min="0" disabled={!canEdit || loading}
-  //               value={form[f.key]} onChange={(e) => setForm({ ...form, [f.key]: e.target.value })}
-  //             />
-  //             <span className="small">{f.hint}</span>
-  //           </label>
-  //         ))}
-  //       </div>
-  //       {canEdit && <div className="acts"><button className="btn" type="submit" disabled={saving || loading}>{saving ? 'Saving...' : 'Save rates'}</button></div>}
-  //     </form>
-
-  //     <div className="card form">
-  //       <h3>Preview (with the numbers above)</h3>
-  //       <p>{usd > 0 ? `$1 = ${Math.floor(usd)} coins · $10 = ${Math.floor(usd * 10)} coins · $100 = ${Math.floor(usd * 100)} coins` : 'USD rate is not set.'}</p>
-  //       <p>{inr > 0 ? `₹100 = ${Math.floor(inr * 100)} coins · ₹500 = ${Math.floor(inr * 500)} coins · ₹1000 = ${Math.floor(inr * 1000)} coins` : 'INR rate is not set.'}</p>
-  //     </div>
-  //   </>
-  // );
 }

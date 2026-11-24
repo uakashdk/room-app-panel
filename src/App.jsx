@@ -315,27 +315,4 @@ export default function App() {
       </main>
     </div>
   );
-  // return (
-  //   <div className="layout">
-  //     <aside className="sidebar">
-  //       <div className="brand">HyperLive<span>Admin</span></div>
-  //       <nav>
-  //         {Object.keys(PAGES).map((n) => (
-  //           <a key={n} className={`nav ${page === n ? 'active' : ''}`} onClick={() => setPage(n)}>{n}</a>
-  //         ))}
-  //         {SOON.map((n) => (
-  //           <a key={n} className="nav disabled">{n}<em>soon</em></a>
-  //         ))}
-  //       </nav>
-  //       <div className="me">
-  //         <div className="muted small">{s.user.email}</div>
-  //         <div className={`role ${s.role}`}>{s.role === 'super_admin' ? 'Super admin' : 'Admin'}</div>
-  //         <button className="btn ghost" onClick={() => signOut(auth)}>Sign out</button>
-  //       </div>
-  //     </aside>
-  //     <main className="main">
-  //       {(() => { const Page = PAGES[page]; return <Page staff={s.user} role={s.role} />; })()}
-  //     </main>
-  //   </div>
-  // );
 }
