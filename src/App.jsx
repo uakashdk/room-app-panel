@@ -15,10 +15,12 @@ import Transactions from "./pages/Transactions.jsx";
 import Users from "./pages/Users.jsx";
 import Vip from "./pages/Vip.jsx";
 import Withdrawals from "./pages/Withdrawals.jsx";
+import AdminAccess from './pages/AdminAccess.jsx';
 
 const STAFF_ROLES = ["admin", "super_admin"];
 const PAGES = {
   Users,
+  Admin: AdminAccess,
   Agencies,
   Rooms,
   Banners,

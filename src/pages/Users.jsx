@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   addDoc, collection, doc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc, where,
 } from 'firebase/firestore';
 import { db } from '../firebase';
+import { api } from '../api';
 
 const PAGE = 50;
 
@@ -17,7 +19,67 @@ function buildQuery(text) {
 
 const fmtDate = (ts) => (ts?.toDate ? ts.toDate().toLocaleDateString('en-IN') : '-');
 
-export default function Users({ staff }) {
+// One "Actions" button that opens a glossy menu. The menu is drawn on top of the page, so the table can't clip it.
+function ActionMenu({ items, disabled }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({});
+  const btnRef = useRef(null);
+  const listRef = useRef(null);
+
+  const toggle = () => {
+    if (disabled) return;
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const right = document.documentElement.clientWidth - r.right;
+      const below = window.innerHeight - r.bottom;
+      const up = below < 240 && r.top > below; // not enough room below: open upwards
+      setPos(up ? { right, bottom: window.innerHeight - r.top + 8 } : { right, top: r.bottom + 8 });
+    }
+    setOpen((o) => !o);
+  };
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = () => setOpen(false);
+    const outside = (e) => {
+      if (btnRef.current?.contains(e.target) || listRef.current?.contains(e.target)) return;
+      close();
+    };
+    const onKey = (e) => e.key === 'Escape' && close();
+    const onScroll = (e) => { if (!listRef.current?.contains(e.target)) close(); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('mousedown', outside);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button type="button" ref={btnRef} className="btn sm am-btn" disabled={disabled} aria-haspopup="menu" aria-expanded={open} onClick={toggle}>
+        Actions
+        <svg className="am-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+      </button>
+      {open && createPortal(
+        <ul ref={listRef} className="am-list" role="menu" style={pos}>
+          {items.map((it) => (
+            <li key={it.label} role="menuitem" className={`am-item ${it.danger ? 'danger' : ''}`} onClick={() => { setOpen(false); it.onClick(); }}>{it.label}</li>
+          ))}
+        </ul>,
+        document.body,
+      )}
+    </>
+  );
+}
+
+export default function Users({ staff, role }) {
+  const isSuper = role === 'super_admin';
+  const [note, setNote] = useState('');
   const [text, setText] = useState('');
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +116,35 @@ export default function Users({ staff }) {
       setRows((r) => r.map((x) => (x.id === u.id ? { ...x, [field]: value } : x)));
     } catch (e) {
       setError(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+    // Keep true while the backend is not ready: the button flips on screen only, nothing is saved.
+  // When POST /admin/set-role exists on the backend, set it to false.
+  const PREVIEW_ONLY = true;
+
+  const setAdminRole = async (u, makeAdmin) => {
+    const newRole = makeAdmin ? 'admin' : 'user';
+    const question = makeAdmin
+      ? `Make ${u.name} (ID ${u.userId}) an Admin? They will get access to this panel.`
+      : `Remove Admin access of ${u.name} (ID ${u.userId})?`;
+    if (!window.confirm(question)) return;
+    setBusyId(u.id);
+    setError('');
+    setNote('');
+    try {
+      if (!PREVIEW_ONLY) await api('/admin/set-role', 'POST', { uid: u.id, role: newRole });
+      setRows((r) => r.map((x) => (x.id === u.id ? { ...x, role: newRole } : x)));
+      setNote(PREVIEW_ONLY
+        ? `Preview only: ${u.name} looks like ${makeAdmin ? 'an Admin' : 'a normal user'} on this screen, but nothing was saved because the backend is not connected yet.`
+        : `${u.name} is ${makeAdmin ? 'now an Admin. They must sign out and sign in again to see the panel' : 'no longer an Admin. It applies the next time they sign in'}.`);
+    } catch (e) {
+      const m = String(e.message || e);
+      setError(/cannot reach|failed to fetch|network|404|not found/i.test(m)
+        ? 'This is not available yet: the backend is not connected or does not have this feature. Nothing was changed.'
+        : m);
     } finally {
       setBusyId(null);
     }
@@ -292,6 +383,32 @@ export default function Users({ staff }) {
         .ux-wrap .pad { padding: 28px 14px; text-align: center; letter-spacing: 0.04em; }
         .ux-load { animation: ux-pulse 1.4s ease-in-out infinite; }
 
+                /* ---------- ACTIONS DROPDOWN ---------- */
+        .ux-wrap .am-btn { display: inline-flex; align-items: center; gap: 8px; padding-right: 12px; }
+        .ux-wrap .am-chev { transition: transform .2s; position: relative; }
+        .ux-wrap .am-btn[aria-expanded='true'] .am-chev { transform: rotate(180deg); }
+
+        /* the open menu is drawn outside .ux-wrap, so these rules are global */
+        .am-list {
+          position: fixed; z-index: 1000; min-width: 190px; margin: 0; padding: 6px; list-style: none; color: #fff;
+          border-radius: 16px; border: 1px solid rgba(255,255,255,0.22);
+          background-color: #1a1028;
+          background-image:
+            radial-gradient(130% 30% at 50% -4%, rgba(255,255,255,0.20), rgba(255,255,255,0.04) 55%, transparent 75%),
+            linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0) 40%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(0,0,0,0.5), 0 18px 40px rgba(0,0,0,0.6);
+          animation: am-in .16s ease-out;
+        }
+        .am-item { padding: 10px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap; font-weight: 600; letter-spacing: 0.02em; border: 1px solid transparent; }
+        .am-item:hover {
+          border-color: rgba(255,255,255,0.2);
+          background-image: linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.05) 55%, rgba(0,0,0,0.08));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.32);
+        }
+        .am-item.danger { color: var(--danger, #ff6b7a); }
+        .am-item.danger:hover { border-color: rgba(255,90,100,0.4); background-image: linear-gradient(180deg, rgba(255,90,100,0.22), rgba(255,90,100,0.06) 55%, rgba(0,0,0,0.08)); }
+        @keyframes am-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
         @keyframes ux-rise { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
         @keyframes ux-row { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
         @keyframes ux-pulse { 0%,100% { opacity: .45; } 50% { opacity: .9; } }
@@ -311,6 +428,7 @@ export default function Users({ staff }) {
       </div>
 
       {error && <div className="error box">{error}</div>}
+      {note && <div className="ok box">{note}</div>}
 
       <div
         className="card table-wrap"
@@ -333,6 +451,18 @@ export default function Users({ staff }) {
               const host = u.hostStatus || 'none';
               const self = u.id === staff.uid;
               const busy = busyId === u.id;
+              const items = [];
+              if (!self && status !== 'active') items.push({ label: 'Unban', onClick: () => change(u, 'status', 'active', 'Unban') });
+              if (!self && status === 'active') {
+                items.push({ label: 'Suspend', onClick: () => change(u, 'status', 'suspended', 'Suspend') });
+                items.push({ label: 'Ban', danger: true, onClick: () => change(u, 'status', 'banned', 'Ban') });
+              }
+              if (status === 'active' && host === 'approved') items.push({ label: 'Remove host', onClick: () => change(u, 'hostStatus', 'none', 'Remove host status of') });
+              if (isSuper && !self && u.role !== 'super_admin') {
+                items.push(u.role === 'admin'
+                  ? { label: 'Remove Admin', danger: true, onClick: () => setAdminRole(u, false) }
+                  : { label: 'Make Admin', onClick: () => setAdminRole(u, true) });
+              }
               return (
                 <tr key={u.id}>
                   <td>
@@ -348,19 +478,8 @@ export default function Users({ staff }) {
                   <td>{fmtDate(u.createdAt)}</td>
                   <td>
                     <div className="acts">
-                      {!self && status !== 'active' && (
-                        <button className="btn sm" disabled={busy} onClick={() => change(u, 'status', 'active', 'Unban')}>Unban</button>
-                      )}
-                      {!self && status === 'active' && (
-                        <>
-                          <button className="btn sm ghost" disabled={busy} onClick={() => change(u, 'status', 'suspended', 'Suspend')}>Suspend</button>
-                          <button className="btn sm danger" disabled={busy} onClick={() => change(u, 'status', 'banned', 'Ban')}>Ban</button>
-                        </>
-                      )}
-                      {/* nobody becomes a host here: a person applies to an agency and the agency owner approves (Agencies page) */}
-                      {status === 'active' && host === 'approved' && (
-                        <button className="btn sm ghost" disabled={busy} onClick={() => change(u, 'hostStatus', 'none', 'Remove host status of')}>Remove host</button>
-                      )}
+                      {items.length > 0 && <ActionMenu items={items} disabled={busy} />}
+                      {isSuper && !self && u.role === 'super_admin' && <span className="muted small">Super admin</span>}
                       {host === 'pending' && <span className="muted small">Host request waiting</span>}
                       {self && <span className="muted small">you</span>}
                     </div>
