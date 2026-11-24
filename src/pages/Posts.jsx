@@ -11,6 +11,7 @@ export default function Posts({ staff }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
+  
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
