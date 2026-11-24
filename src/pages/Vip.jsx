@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import { api } from '../api';
@@ -6,6 +7,164 @@ import { api } from '../api';
 const FRAMES = ['none', 'ring', 'double', 'glow'];
 const ENTRY = ['none', 'glow', 'sparkle', 'royal', 'fire'];
 const CHAT = ['none', 'name_color', 'bubble'];
+
+function GlossSelect({ value, onChange, options, disabled }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({});
+  const btnRef = useRef(null);
+  const listRef = useRef(null);
+
+  const toggle = () => {
+    if (disabled) return;
+    if (!open && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const below = window.innerHeight - r.bottom;
+      const up = below < 260 && r.top > below;
+      setPos(up
+        ? { left: r.left, minWidth: r.width, bottom: window.innerHeight - r.top + 8, maxHeight: Math.min(300, r.top - 16) }
+        : { left: r.left, minWidth: r.width, top: r.bottom + 8, maxHeight: Math.min(300, below - 16) });
+    }
+    setOpen((o) => !o);
+  };
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = (e) => {
+      if (btnRef.current?.contains(e.target) || listRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
+    const onKey = (e) => e.key === 'Escape' && setOpen(false);
+    const onScroll = (e) => { if (!listRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', outside);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', () => setOpen(false));
+    return () => {
+      document.removeEventListener('mousedown', outside);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', onScroll, true);
+    };
+  }, [open]);
+
+  const cur = options.find((o) => o.value === value);
+  return (
+    <div className="gsel">
+      <button type="button" ref={btnRef} className="gsel-btn" disabled={disabled} aria-haspopup="listbox" aria-expanded={open} onClick={toggle}>
+        <span className="gsel-txt">{cur ? cur.label : ''}</span><i className="gsel-chev" />
+      </button>
+      {open && createPortal(
+        <ul ref={listRef} className="gsel-list" role="listbox" style={pos}>
+          {options.map((o) => (
+            <li key={String(o.value)} role="option" aria-selected={o.value === value} className={`gsel-opt ${o.value === value ? 'on' : ''}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}>{o.label}</li>
+          ))}
+        </ul>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+const GLOSS = `
+/* glossy finish: same colours, only sheen + highlights (scoped to the VIP page) */
+.vipx .card { position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.45), 0 10px 26px rgba(0,0,0,.35); }
+.vipx .card::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 46%; pointer-events: none; z-index: 0;
+  border-radius: inherit; border-bottom-left-radius: 50% 36px; border-bottom-right-radius: 50% 36px;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.01)); }
+.vipx .card > * { position: relative; z-index: 1; }
+
+/* tabs */
+.vipx .tabs .tab.active { box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 3px 10px rgba(0,0,0,.35); }
+
+/* buttons */
+.vipx .btn { position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 5px rgba(0,0,0,.25), 0 6px 16px rgba(0,0,0,.3); }
+.vipx .btn::before { content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 46%; border-radius: 10px 10px 50% 50% / 10px 10px 8px 8px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,.04)); }
+.vipx .btn.ghost::before { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0)); }
+
+/* inputs, textarea and dropdowns */
+.vipx .field input:not([type='checkbox']):not([type='color']):not([type='file']),
+.vipx .field textarea,
+.vipx select {
+  border-radius: 14px; border: 1px solid rgba(255,255,255,.14); outline: none;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.015));
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+  transition: border-color .15s, box-shadow .15s;
+}
+.vipx select, .vipx .vip-level-native-select {
+  -webkit-appearance: none !important; appearance: none !important; cursor: pointer; padding-right: 38px !important;
+  border-radius: 14px !important; border: 1px solid rgba(255,255,255,.16) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f4c542' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"),
+                    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02));
+  background-repeat: no-repeat, no-repeat; background-position: right 13px center, 0 0; background-size: 14px 14px, 100% 100%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 5px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.3);
+}
+.vipx select:disabled { opacity: .6; cursor: not-allowed; }
+.vipx select option { background: #1a1028; color: #fff; }
+.vipx .field input:focus, .vipx .field textarea:focus, .vipx select:focus {
+  border-color: var(--gold, #f4c542) !important; box-shadow: inset 0 2px 6px rgba(0,0,0,.35), 0 0 0 3px rgba(244,197,66,.16);
+}
+
+/* preview box */
+.vipx .previewbox { border-radius: 16px; border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(0,0,0,.4); }
+/* ===== stronger gloss (login-page level) ===== */
+.vipx .card {
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
+}
+.vipx .card::before {
+  height: 54%;
+  border-bottom-left-radius: 50% 52px; border-bottom-right-radius: 50% 52px;
+  background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.05) 65%, rgba(255,255,255,0));
+}
+
+.vipx .btn {
+  border: 1px solid rgba(255,255,255,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.35);
+}
+.vipx .btn::before { height: 50%; background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.06)); }
+.vipx .btn.ghost::before { background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); }
+
+.vipx .field input:not([type='checkbox']):not([type='color']):not([type='file']),
+.vipx .field textarea {
+  border: 1px solid rgba(255,255,255,.2);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02) 60%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 6px rgba(0,0,0,.35), 0 3px 10px rgba(0,0,0,.25);
+}
+.vipx select, .vipx .vip-level-native-select {
+  border: 1px solid rgba(255,255,255,.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -3px 6px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.35);
+}
+
+.vipx .tabs .tab.active { text-shadow: 0 0 14px rgba(244,197,66,.35); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 12px rgba(0,0,0,.4); }
+.vipx .previewbox { box-shadow: inset 0 1px 0 rgba(255,255,255,.25), inset 0 -1px 0 rgba(0,0,0,.5), 0 6px 16px rgba(0,0,0,.3); }
+
+/* ===== glossy pill tabs (like Agencies / Host requests) ===== */
+.vipx .tabs { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; }
+.vipx .tabs .tab {
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; cursor: pointer;
+  margin: 0 !important; padding: 10px 20px !important; border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.16) !important; border-top: 1px solid rgba(255,255,255,.2) !important; border-bottom: 1px solid rgba(255,255,255,.1) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%, rgba(0,0,0,.18)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 5px rgba(0,0,0,.35), 0 4px 12px rgba(0,0,0,.3) !important;
+  transition: border-color .15s, transform .15s, color .15s;
+}
+.vipx .tabs .tab::before {
+  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
+  border-radius: 13px 13px 50% 50% / 13px 13px 10px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+}
+.vipx .tabs .tab:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.3) !important; }
+.vipx .tabs .tab.active {
+  border: 1px solid rgba(255,255,255,.38) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08) 50%, rgba(0,0,0,.22)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -3px 6px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.4) !important;
+  text-shadow: 0 0 14px rgba(244,197,66,.35);
+}
+.vipx .tabs .tab.active::before { background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.02)); }
+
+`;
+
 const EMPTY = {
   name: '', tier: '1', priceCoins: '1000', days: '30', color: '#F4C542', color2: '#B77713', badgeText: '', frameStyle: 'ring',
   entryEffect: 'none', entryMessage: '', chatEffect: 'name_color', order: '1', enabled: true, perks: '', frameImage: '',
@@ -58,6 +217,52 @@ function Look({ l }) {
   );
 }
 
+const GSEL_CSS = `
+.vipx .gsel { position: relative; display: block; width: 100%; }
+.vipx td .gsel { min-width: 230px; }
+.vipx .gsel .gsel-btn {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 44px; padding: 10px 38px 10px 12px; position: relative;
+  font: inherit; font-size: 14px; color: var(--text, #fff); text-align: left; cursor: pointer; outline: none;
+  border-radius: 14px; border: 1px solid rgba(255,255,255,.22);
+  background-color: rgba(8,4,16,.55);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -3px 6px rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.35);
+  transition: border-color .15s, box-shadow .15s;
+}
+.vipx .gsel .gsel-btn:focus-visible, .vipx .gsel .gsel-btn[aria-expanded='true'] { border-color: var(--gold, #f4c542); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), inset 0 -3px 6px rgba(0,0,0,.35), 0 0 0 3px rgba(244,197,66,.16); }
+.vipx .gsel .gsel-btn:disabled { opacity: .6; cursor: not-allowed; }
+.vipx .gsel .gsel-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vipx .gsel .gsel-chev {
+  position: absolute; right: 13px; top: 50%; width: 14px; height: 14px; margin-top: -7px; pointer-events: none; transition: transform .2s;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f4c542' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat center / 14px 14px;
+}
+.vipx .gsel .gsel-btn[aria-expanded='true'] .gsel-chev { transform: rotate(180deg); }
+
+/* the open list is drawn on top of the page (outside .vipx), so it is styled globally */
+.gsel-list {
+  position: fixed; z-index: 1000; margin: 0; padding: 6px; list-style: none; overflow-y: auto; color: #fff;
+  border-radius: 16px; border: 1px solid rgba(255,255,255,.22);
+  background-color: #1a1028;
+  background-image:
+    radial-gradient(130% 30% at 50% -4%, rgba(255,255,255,.2), rgba(255,255,255,.04) 55%, transparent 75%),
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0) 40%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(0,0,0,.5), 0 18px 40px rgba(0,0,0,.6);
+  animation: gselIn .16s ease-out;
+}
+.gsel-list .gsel-opt { padding: 9px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap; border: 1px solid transparent; }
+.gsel-list .gsel-opt:hover {
+  border-color: rgba(255,255,255,.18);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04) 55%, rgba(0,0,0,.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3);
+}
+.gsel-list .gsel-opt.on {
+  color: #f4c542; font-weight: 700; border-color: rgba(255,255,255,.3);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.07) 49%, rgba(0,0,0,.18) 51%, rgba(0,0,0,.04) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 4px rgba(0,0,0,.3), 0 4px 10px -4px rgba(0,0,0,.5);
+}
+@keyframes gselIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+`;
+
 export default function Vip({ role }) {
   const canEdit = role === 'super_admin';
   const [tab, setTab] = useState('levels');
@@ -109,7 +314,7 @@ export default function Vip({ role }) {
   const fail = (e) => { setNote(''); setError(e.message || String(e)); };
 
   return (
-    <>
+    <><style>{GLOSS}{GSEL_CSS}</style><div className="vipx">
       <div className="head"><h1>VIP</h1></div>
       <div className="tabs">
         {[['levels', 'Levels'], ['members', 'Give / revoke & history'], ['gifts', 'VIP gifts']].map(([k, l]) => (
@@ -123,6 +328,7 @@ export default function Vip({ role }) {
       {tab === 'levels' && <Levels canEdit={canEdit} levels={levels} loading={loading} reload={loadLevels} ok={ok} fail={fail} />}
       {tab === 'members' && (canEdit ? <Members levels={levels} ok={ok} fail={fail} /> : <p className="muted pad">Only a Super admin can give VIP or see the VIP history.</p>)}
       {tab === 'gifts' && <VipGifts canEdit={canEdit} levels={levels} ok={ok} fail={fail} />}
+    </div>
     </>
   );
 }
@@ -203,7 +409,7 @@ function Levels({ canEdit, levels, loading, reload, ok, fail }) {
             <label className="field"><span>Second colour (gradient / frame)</span>
               <div className="colorrow"><input type="color" value={form.color2} onChange={(e) => set({ color2: e.target.value })} /><input value={form.color2} onChange={(e) => set({ color2: e.target.value })} /></div>
             </label>
-            <label className="field"><span>Avatar frame</span><select value={form.frameStyle} onChange={(e) => set({ frameStyle: e.target.value })}>{FRAMES.map((o) => <option key={o}>{o}</option>)}</select></label>
+            <label className="field"><span>Avatar frame</span><GlossSelect value={form.frameStyle} onChange={(v) => set({ frameStyle: v })} options={FRAMES.map((o) => ({ value: o, label: o }))} /></label>
             <label className="field wide"><span>Frame picture (optional, PNG with a see-through middle; it replaces the plain frame above)</span>
               <div className="colorrow">
                 <input type="file" accept="image/png,image/webp" onChange={async (e) => {
@@ -215,8 +421,8 @@ function Levels({ canEdit, levels, loading, reload, ok, fail }) {
                 {form.frameImage && <button type="button" className="btn sm ghost" onClick={() => set({ frameImage: '' })}>Remove picture</button>}
               </div>
             </label>
-            <label className="field"><span>Room entry effect</span><select value={form.entryEffect} onChange={(e) => set({ entryEffect: e.target.value })}>{ENTRY.map((o) => <option key={o}>{o}</option>)}</select></label>
-            <label className="field"><span>Chat look in rooms</span><select value={form.chatEffect} onChange={(e) => set({ chatEffect: e.target.value })}>{CHAT.map((o) => <option key={o}>{o}</option>)}</select></label>
+            <label className="field"><span>Room entry effect</span><GlossSelect value={form.entryEffect} onChange={(v) => set({ entryEffect: v })} options={ENTRY.map((o) => ({ value: o, label: o }))} /></label>
+            <label className="field"><span>Chat look in rooms</span><GlossSelect value={form.chatEffect} onChange={(v) => set({ chatEffect: v })} options={CHAT.map((o) => ({ value: o, label: o }))} /></label>
             <label className="field"><span>Entry message (shown with the name)</span><input maxLength={60} placeholder="entered the room" value={form.entryMessage} onChange={(e) => set({ entryMessage: e.target.value })} /></label>
             <label className="field wide"><span>Other benefits (one per line, shown on the VIP screen)</span>
               <textarea rows={4} value={form.perks} onChange={(e) => set({ perks: e.target.value })} />
@@ -332,37 +538,12 @@ function Members({ levels, ok, fail }) {
             <label className="field"><span>User ID (6 digits) *</span><input inputMode="numeric" maxLength={6} value={grant.userId} onChange={(e) => setGrant({ ...grant, userId: e.target.value.replace(/\D/g, '') })} /></label>
             <label className="field vip-level-field">
               <span>Level</span>
-              <select
-                className="vip-level-native-select"
+              <GlossSelect
                 value={levelId}
-                onChange={(e) => setGrant((current) => ({ ...current, levelId: e.target.value }))}
+                onChange={(v) => setGrant((current) => ({ ...current, levelId: v }))}
                 disabled={levels.length === 0}
-                required
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  minWidth: 0,
-                  minHeight: '44px',
-                  padding: '10px 12px',
-                  border: '1px solid var(--border, #454052)',
-                  borderRadius: '9px',
-                  backgroundColor: 'var(--input-bg, #171724)',
-                  color: 'var(--text, #ffffff)',
-                  fontSize: '14px',
-                  appearance: 'auto',
-                  WebkitAppearance: 'menulist',
-                  cursor: levels.length ? 'pointer' : 'not-allowed',
-                  position: 'relative',
-                  zIndex: 2,
-                }}
-              >
-                {levels.length === 0 && <option value="">No VIP levels available</option>}
-                {levels.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name} (Tier {l.tier})
-                  </option>
-                ))}
-              </select>
+                options={levels.length ? levels.map((l) => ({ value: l.id, label: `${l.name} (Tier ${l.tier})` })) : [{ value: '', label: 'No VIP levels available' }]}
+              />
             </label>
             <label className="field"><span>Days</span><input type="number" min="1" value={grant.days} onChange={(e) => setGrant({ ...grant, days: e.target.value })} /></label>
             <label className="field"><span>Note (why)</span><input maxLength={120} value={grant.note} onChange={(e) => setGrant({ ...grant, note: e.target.value })} /></label>
@@ -477,10 +658,12 @@ function VipGifts({ canEdit, levels, ok, fail }) {
                   </label>
                 </td>
                 <td>
-                  <select disabled={!canEdit || busyId === g.id} value={Number(g.minVipTier || 0)} onChange={(e) => change(g, e.target.value)}>
-                    <option value={0}>Everybody</option>
-                    {tiers.map((t) => <option key={t.tier} value={t.tier}>{t.name} VIP and above (tier {t.tier})</option>)}
-                  </select>
+                  <GlossSelect
+                    disabled={!canEdit || busyId === g.id}
+                    value={Number(g.minVipTier || 0)}
+                    onChange={(v) => change(g, v)}
+                    options={[{ value: 0, label: 'Everybody' }, ...tiers.map((t) => ({ value: t.tier, label: `${t.name} VIP and above (tier ${t.tier})` }))]}
+                  />
                 </td>
               </tr>
             ))}

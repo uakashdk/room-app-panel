@@ -73,6 +73,49 @@ const CSS = `
 .cp-ok { color: var(--ok); background: rgba(67, 201, 139, .12); border: 1px solid rgba(67, 201, 139, .45); padding: 10px 14px; border-radius: 12px; margin-bottom: 14px; font-size: 13px; }
 @keyframes cpSlide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes cpFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===== glossy finish (add-on: same colours, only a light sheen + highlights) ===== */
+.cp-card {
+  background: radial-gradient(130% 55% at 50% -8%, rgba(255,255,255,.13), transparent 62%), linear-gradient(160deg, #1f1233, #130a1f);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(0,0,0,.45), 0 10px 26px rgba(0,0,0,.35);
+}
+.cp-card:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -1px 0 rgba(0,0,0,.45), 0 14px 34px rgba(0,0,0,.4); }
+
+.cp-stat {
+  background: radial-gradient(130% 60% at 50% -10%, rgba(255,255,255,.11), transparent 62%), linear-gradient(145deg, #1d1030, #140a21);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.3);
+}
+
+.cp-tabs { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.35); }
+.cp-tab.on {
+  background: linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,0) 60%), #2a1840;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 3px 10px rgba(0,0,0,.35);
+}
+
+.cp-add {
+  background: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 52%), linear-gradient(135deg, #ffe7a0, #f4c542 55%, #c99616);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -3px 6px rgba(120,80,0,.3), 0 8px 26px rgba(244, 197, 66, .28);
+}
+.cp-add:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -3px 6px rgba(120,80,0,.3), 0 12px 30px rgba(244, 197, 66, .38); }
+.cp-role.super {
+  background: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 52%), linear-gradient(135deg, #ffe7a0, #f4c542 55%, #c99616);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -2px 4px rgba(120,80,0,.3);
+}
+
+.cp-coin {
+  background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.55), transparent 45%), linear-gradient(135deg, #ffe7a0, #f4c542 55%, #c99616);
+  box-shadow: 0 6px 20px rgba(244, 197, 66, .35), inset 0 0 0 3px rgba(255, 255, 255, .28), inset 0 -4px 8px rgba(120,80,0,.3);
+}
+
+.cp-edit { background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02)); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+.cp-chip { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02)); box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+.cp-chip:hover, .cp-chip.on { background: linear-gradient(180deg, rgba(244,197,66,.18), rgba(244,197,66,.06)); }
+
+.cp-drawer {
+  background: radial-gradient(120% 22% at 50% -4%, rgba(255,255,255,.10), transparent 70%), var(--bg2);
+  box-shadow: inset 1px 0 0 rgba(255,255,255,.12), -16px 0 40px rgba(0,0,0,.45);
+}
+.cp-x { box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
 `;
 
 const EMPTY = { name: '', currency: 'USD', price: '', coins: '', bonusCoins: '0', order: '1', enabled: true };

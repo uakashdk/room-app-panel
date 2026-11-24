@@ -5,6 +5,88 @@ const usd = (c) => `$${(Number(c || 0) / 100).toLocaleString('en-US', { minimumF
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 const mins = (m) => `${Math.floor((m || 0) / 60)}h ${String((m || 0) % 60).padStart(2, '0')}m`;
 
+const GLOSS = `
+/* glossy finish: same colours, only sheen + highlights (scoped to the Salary page) */
+.salx h1 { text-shadow: 0 2px 14px rgba(244,197,66,.10); }
+
+/* glossy pill tabs (like Agencies / Host requests) */
+.salx .tabs { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; }
+.salx .tabs .tab {
+  position: relative; overflow: hidden; display: inline-flex; align-items: center; cursor: pointer;
+  margin: 0 !important; padding: 10px 20px !important; border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.16) !important; border-top: 1px solid rgba(255,255,255,.2) !important; border-bottom: 1px solid rgba(255,255,255,.1) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%, rgba(0,0,0,.18)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 5px rgba(0,0,0,.35), 0 4px 12px rgba(0,0,0,.3) !important;
+  transition: border-color .15s, transform .15s, color .15s;
+}
+.salx .tabs .tab::before {
+  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
+  border-radius: 13px 13px 50% 50% / 13px 13px 10px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+}
+.salx .tabs .tab:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.3) !important; }
+.salx .tabs .tab.active {
+  border: 1px solid rgba(255,255,255,.38) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08) 50%, rgba(0,0,0,.22)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -3px 6px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.4) !important;
+  text-shadow: 0 0 14px rgba(244,197,66,.35);
+}
+.salx .tabs .tab.active::before { background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.02)); }
+
+/* cards (filter bar + table): curved light sheen at the top, glass edge */
+.salx .card {
+  border: 1px solid rgba(255,255,255,.2);
+  background-image:
+    radial-gradient(120% 38% at 50% -6%, rgba(255,255,255,.17), rgba(255,255,255,.04) 55%, transparent 72%),
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 40%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
+}
+
+/* table */
+.salx thead th {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
+  border-bottom: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+}
+.salx tbody td { border-bottom: 1px solid rgba(255,255,255,.07); }
+.salx tbody tr:hover td { background-image: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01)); }
+
+/* status pills */
+.salx .pill {
+  border: 1px solid rgba(255,255,255,.22);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 50%, rgba(0,0,0,.14) 51%, rgba(0,0,0,.02) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 2px rgba(0,0,0,.25), 0 3px 8px rgba(0,0,0,.3);
+}
+
+/* search boxes */
+.salx input:not([type='checkbox']) {
+  border-radius: 14px; border: 1px solid rgba(255,255,255,.2); outline: none;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02) 60%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 6px rgba(0,0,0,.35), 0 3px 10px rgba(0,0,0,.25);
+  transition: border-color .15s, box-shadow .15s;
+}
+.salx input:not([type='checkbox']):focus { border-color: var(--gold, #f4c542); box-shadow: inset 0 -2px 6px rgba(0,0,0,.35), 0 0 0 3px rgba(244,197,66,.16); }
+
+/* buttons: keep their own colours, add the glossy highlight on top */
+.salx .btn {
+  position: relative; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.3), 0 8px 20px -8px rgba(0,0,0,.6);
+  transition: transform .15s, filter .15s, border-color .15s;
+}
+.salx .btn::before {
+  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
+  border-radius: 10px 10px 50% 50% / 10px 10px 8px 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.05));
+}
+.salx .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.salx .btn:active:not(:disabled) { transform: translateY(1px); }
+.salx .btn:disabled { cursor: not-allowed; }
+.salx .btn.ghost {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.07) 49%, rgba(0,0,0,.16) 51%, rgba(0,0,0,.04) 100%);
+}
+.salx .btn.ghost::before { background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); }
+`;
+
 /** Weekly salary approval: the server makes one record per host every Monday; a Super admin approves or rejects them (one by one or many at once). */
 export default function Salary({ role }) {
   const canEdit = role === 'super_admin';
@@ -95,10 +177,11 @@ export default function Salary({ role }) {
   if (!canEdit) return (<><div className="head"><h1>Salary approval</h1></div><p className="muted pad">Only a Super admin can approve salaries.</p></>);
 
   return (
-    <>
+    <><style>{GLOSS}</style><div className="salx">
       <div className="head"><h1>Salary approval</h1></div>
       <p className="muted small">
-        Every Monday the server calculates last week's salary of each host from the Host policy. Nothing is paid until you approve.
+        Every Monday
+       the server calculates last week's salary of each host from the Host policy. Nothing is paid until you approve.
         Approving adds the host salary to the host and the agent salary to the agency owner. Current week: <b>{currentWeek || '-'}</b>.
       </p>
 
@@ -163,7 +246,7 @@ export default function Salary({ role }) {
             ))}
           </tbody>
         </table>
-      </div>
-    </>
+            </div>
+    </div></>
   );
 }

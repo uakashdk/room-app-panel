@@ -6,6 +6,57 @@ const toCents = (v) => Math.round(Number(String(v).replace(',', '.')) * 100);
 const toDollars = (c) => (Number(c || 0) / 100).toFixed(2);
 const METHODS = [['upi', 'UPI'], ['bank', 'Bank account'], ['paypal', 'PayPal']];
 
+const GLOSS = `
+/* glossy finish: same colours, only sheen + highlights (scoped to the Host policy page) */
+.hpx h1 { text-shadow: 0 2px 14px rgba(244,197,66,.10); }
+
+/* cards (rule bars + level table): curved light sheen at the top, glass edge */
+.hpx .card {
+  border: 1px solid rgba(255,255,255,.2);
+  background-image:
+    radial-gradient(120% 38% at 50% -6%, rgba(255,255,255,.17), rgba(255,255,255,.04) 55%, transparent 72%),
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 40%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
+}
+
+/* table */
+.hpx thead th {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
+  border-bottom: 1px solid rgba(255,255,255,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+}
+.hpx tbody td { border-bottom: 1px solid rgba(255,255,255,.07); }
+.hpx tbody tr:hover td { background-image: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01)); }
+
+/* inputs */
+.hpx input:not([type='checkbox']) {
+  border-radius: 14px; border: 1px solid rgba(255,255,255,.2); outline: none;
+  background-image: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02) 60%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 6px rgba(0,0,0,.35), 0 3px 10px rgba(0,0,0,.25);
+  transition: border-color .15s, box-shadow .15s;
+}
+.hpx input:not([type='checkbox']):focus { border-color: var(--gold, #f4c542); box-shadow: inset 0 -2px 6px rgba(0,0,0,.35), 0 0 0 3px rgba(244,197,66,.16); }
+
+/* buttons: keep their own colours, add the glossy highlight on top */
+.hpx .btn {
+  position: relative; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.3), 0 8px 20px -8px rgba(0,0,0,.6);
+  transition: transform .15s, filter .15s, border-color .15s;
+}
+.hpx .btn::before {
+  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
+  border-radius: 10px 10px 50% 50% / 10px 10px 8px 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.05));
+}
+.hpx .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.hpx .btn:active:not(:disabled) { transform: translateY(1px); }
+.hpx .btn:disabled { cursor: not-allowed; }
+.hpx .btn.ghost {
+  background-image: linear-gradient(180deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.07) 49%, rgba(0,0,0,.16) 51%, rgba(0,0,0,.04) 100%);
+}
+.hpx .btn.ghost::before { background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); }
+`;
+
 /** The host salary levels (the "host policy") and the withdrawal rules. Nothing about salary or commission is fixed in the code: it is set here. */
 export default function HostPolicy({ role }) {
   const canEdit = role === 'super_admin';
@@ -81,7 +132,7 @@ export default function HostPolicy({ role }) {
   if (!canEdit) return (<><div className="head"><h1>Host policy</h1></div><p className="muted pad">Only a Super admin can change the host policy.</p></>);
 
   return (
-    <>
+    <><style>{GLOSS}</style><div className="hpx">
       <div className="head"><h1>Host policy</h1></div>
       {error && <div className="error box">{error}</div>}
       {note && <div className="ok box">{note}</div>}
@@ -140,8 +191,8 @@ export default function HostPolicy({ role }) {
             </div>
             <button className="btn" onClick={saveWithdrawal} disabled={busy}>Save withdrawal rules</button>
           </div>
-        </>
+                </>
       )}
-    </>
+    </div></>
   );
 }
