@@ -1,6 +1,8 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
+import AgencyPlanModal from '../components/AgencyPlanModal.jsx';
+import AgencyRequests from '../components/AgencyRequests.jsx';
 
 const fmtDate = (ms) =>
   ms
@@ -28,6 +30,7 @@ export default function Agencies({ role }) {
   });
 
   const [busy, setBusy] = useState(false);
+  const [planFor, setPlanFor] = useState(null); // the agency whose targets are open
 
   const fail = (e) => {
     setNote('');
@@ -231,6 +234,13 @@ export default function Agencies({ role }) {
           Host requests
           {requests.length ? ` (${requests.length})` : ''}
         </a>
+
+        <a
+          className={`tab ${tab === 'agencyRequests' ? 'active' : ''}`}
+          onClick={() => setTab('agencyRequests')}
+        >
+          Agency requests
+        </a>
       </div>
 
       {error && (
@@ -333,6 +343,7 @@ export default function Agencies({ role }) {
                   <th>Hosts</th>
                   <th>Requests</th>
                   <th>Commission</th>
+                  <th>Targets</th>
                   <th>Created</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -342,7 +353,7 @@ export default function Agencies({ role }) {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan={9} className="muted pad">
+                    <td colSpan={10} className="muted pad">
                       Loading...
                     </td>
                   </tr>
@@ -350,7 +361,7 @@ export default function Agencies({ role }) {
 
                 {!loading && agencies.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="muted pad">
+                    <td colSpan={10} className="muted pad">
                       No agencies yet. Create the first one above.
                     </td>
                   </tr>
@@ -363,7 +374,10 @@ export default function Agencies({ role }) {
                         <b>{a.id}</b>
                       </td>
 
-                      <td>{a.name}</td>
+                      <td>
+                        {a.logo && <img className="logo-sm" src={a.logo} alt="" />}
+                        {a.name}
+                      </td>
 
                       <td>
                         {a.ownerName}
@@ -376,7 +390,14 @@ export default function Agencies({ role }) {
 
                       <td>{a.pending}</td>
 
-                      <td>{a.commissionPercent}%</td>
+                      <td>
+                        {a.commissionPercent}%
+                        <div className="muted small">{a.paypalEmail ? 'PayPal set' : 'No PayPal'}</div>
+                      </td>
+
+                      <td className="small">
+                        {a.hasOwnPlan ? `Own, ${a.planPeriod}` : 'Default policy'}
+                      </td>
 
                       <td>{fmtDate(a.createdAt)}</td>
 
@@ -396,6 +417,13 @@ export default function Agencies({ role }) {
 
                       <td>
                         <div className="acts">
+                          <button
+                            className="btn sm"
+                            onClick={() => setPlanFor(a)}
+                          >
+                            Targets
+                          </button>
+
                           <button
                             className="btn sm ghost"
                             onClick={() => rename(a)}
@@ -523,6 +551,16 @@ export default function Agencies({ role }) {
             </table>
           </div>
         </>
+      )}
+      {/* AGENCY REQUESTS TAB */}
+      {tab === 'agencyRequests' && <AgencyRequests onChanged={load} />}
+
+      {planFor && (
+        <AgencyPlanModal
+          agency={planFor}
+          onClose={() => setPlanFor(null)}
+          onChanged={load}
+        />
       )}
     </>
   );

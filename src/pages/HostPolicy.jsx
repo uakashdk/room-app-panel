@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import PlanEditor from '../components/PlanEditor.jsx';
 
 // the server keeps money in cents, the admin types dollars
 const toCents = (v) => Math.round(Number(String(v).replace(',', '.')) * 100);
@@ -9,9 +10,7 @@ const METHODS = [['upi', 'UPI'], ['bank', 'Bank account'], ['paypal', 'PayPal']]
 /** The host salary levels (the "host policy") and the withdrawal rules. Nothing about salary or commission is fixed in the code: it is set here. */
 export default function HostPolicy({ role }) {
   const canEdit = role === 'super_admin';
-  const [levels, setLevels] = useState([]);
-  const [minActiveDays, setMinActiveDays] = useState('0');
-  const [minLiveMinutes, setMinLiveMinutes] = useState('0');
+  const [policy, setPolicy] = useState(null);
   const [w, setW] = useState({ enabled: true, min: '10.00', max: '5000.00', daily: '5000.00', methods: ['upi', 'bank', 'paypal'] });
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -26,9 +25,7 @@ export default function HostPolicy({ role }) {
     (async () => {
       try {
         const r = await api('/admin/host-policy');
-        setLevels(r.policy.levels.map((l) => ({ target: String(l.targetDiamonds), host: toDollars(l.hostSalaryCents), agent: toDollars(l.agentSalaryCents) })));
-        setMinActiveDays(String(r.policy.minActiveDays));
-        setMinLiveMinutes(String(r.policy.minLiveMinutes));
+        setPolicy(r.policy);
         setW({ enabled: r.withdrawal.enabled, min: toDollars(r.withdrawal.minCents), max: toDollars(r.withdrawal.maxCents), daily: toDollars(r.withdrawal.dailyLimitCents), methods: r.withdrawal.methods });
       } catch (e) {
         fail(e);
@@ -38,24 +35,13 @@ export default function HostPolicy({ role }) {
     })();
   }, [canEdit]);
 
-  const setRow = (i, k, v) => setLevels((ls) => ls.map((l, j) => (j === i ? { ...l, [k]: v } : l)));
-  const addRow = () => setLevels((ls) => {
-    const last = ls[ls.length - 1];
-    return [...ls, { target: String((Number(last?.target) || 0) * 2 || 100000), host: last?.host || '0.00', agent: last?.agent || '0.00' }];
-  });
-  const removeRow = (i) => setLevels((ls) => ls.filter((_, j) => j !== i));
-
-  const savePolicy = async () => {
-    const rows = levels.map((l) => ({ targetDiamonds: Math.round(Number(l.target)), hostSalaryCents: toCents(l.host), agentSalaryCents: toCents(l.agent) }));
-    if (rows.length === 0 || rows.some((r) => !Number.isFinite(r.targetDiamonds) || r.targetDiamonds < 1 || !Number.isFinite(r.hostSalaryCents) || r.hostSalaryCents < 0 || !Number.isFinite(r.agentSalaryCents) || r.agentSalaryCents < 0)) {
-      return fail(new Error('Every level needs a target (1 or more) and salary amounts (0 or more).'));
-    }
-    if (!window.confirm('Save the new host policy? It is used for the weekly salary calculation from now on (weeks already calculated do not change).')) return;
+  const savePolicy = async (body) => {
+    if (!window.confirm('Save the default targets? Agencies that have no targets of their own use them from now on (periods already calculated do not change).')) return;
     setBusy(true);
     try {
-      const r = await api('/admin/host-policy', 'PUT', { minActiveDays: Number(minActiveDays) || 0, minLiveMinutes: Number(minLiveMinutes) || 0, levels: rows });
-      setLevels(r.policy.levels.map((l) => ({ target: String(l.targetDiamonds), host: toDollars(l.hostSalaryCents), agent: toDollars(l.agentSalaryCents) })));
-      ok('Host policy saved.');
+      const r = await api('/admin/host-policy', 'PUT', body);
+      setPolicy(r.policy);
+      ok('Default targets saved.');
     } catch (e) {
       fail(e);
     } finally {
@@ -90,35 +76,12 @@ export default function HostPolicy({ role }) {
       {!loading && (
         <>
           <p className="muted small">
-            In a week a host who receives the target number of diamonds reaches that level. The <b>host salary</b> goes to the host and the <b>agent salary</b> goes to the
-            owner of the host's agency, after you approve the week in <b>Salary approval</b>. Levels are numbered in the order of the target.
+            These are the <b>default targets</b>, used by every agency that has no targets of its own. To give one agency its own targets (weekly or monthly, its own levels),
+            open <b>Agencies</b> and press <b>Targets</b> on that agency. A host who receives the target number of diamonds before the deadline reaches that level and earns its
+            host salary. The <b>agency commission</b> is not a second salary: it is a % of the host's withdrawal, paid to the agency owner's PayPal (set per agency).
           </p>
-          <div className="card form" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <label>Live on at least (days of the week)<input type="number" min="0" max="7" value={minActiveDays} onChange={(e) => setMinActiveDays(e.target.value)} style={{ width: 120 }} /></label>
-            <label>and at least (live minutes in the week)<input type="number" min="0" value={minLiveMinutes} onChange={(e) => setMinLiveMinutes(e.target.value)} style={{ width: 140 }} /></label>
-            <span className="muted small">0 = no rule. A host who does not meet it gets the week marked "not eligible".</span>
-          </div>
-
-          <div className="card table-wrap">
-            <table>
-              <thead><tr><th>Level</th><th>Weekly target (diamonds)</th><th>Host salary (USD)</th><th>Agent salary (USD)</th><th></th></tr></thead>
-              <tbody>
-                {levels.map((l, i) => (
-                  <tr key={i}>
-                    <td><b>L{i + 1}</b></td>
-                    <td><input type="number" min="1" value={l.target} onChange={(e) => setRow(i, 'target', e.target.value)} style={{ width: 170 }} /></td>
-                    <td><input value={l.host} onChange={(e) => setRow(i, 'host', e.target.value)} style={{ width: 120 }} /></td>
-                    <td><input value={l.agent} onChange={(e) => setRow(i, 'agent', e.target.value)} style={{ width: 120 }} /></td>
-                    <td><button className="btn danger sm" onClick={() => removeRow(i)} disabled={levels.length <= 1}>Remove</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div style={{ display: 'flex', gap: 10, margin: '12px 0 30px' }}>
-            <button className="btn ghost" onClick={addRow}>+ Add level</button>
-            <button className="btn" onClick={savePolicy} disabled={busy}>Save host policy</button>
-          </div>
+          <PlanEditor policy={policy} onSave={savePolicy} busy={busy} saveLabel="Save default targets" />
+          <div style={{ height: 24 }} />
 
           <div className="head"><h1 style={{ fontSize: 20 }}>Withdrawal rules</h1></div>
           <div className="card form" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>

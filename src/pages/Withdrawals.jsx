@@ -48,13 +48,22 @@ export default function Withdrawals({ role }) {
   useEffect(() => { load(); }, [load]);
 
   const approve = async (w) => {
-    const ref = window.prompt(`Pay ${usd(w.amountCents)} to ${w.userName} first, then write the payment reference (UTR / transaction id):`);
+    const p = w.agencyPayout;
+    const ref = window.prompt(p
+      ? `1/2  Pay ${usd(p.hostCents)} to ${w.userName} (bank / UPI details in the table) first, then write that payment reference (UTR / transaction id):`
+      : `Pay ${usd(w.amountCents)} to ${w.userName} first, then write the payment reference (UTR / transaction id):`);
     if (ref === null) return;
     if (ref.trim().length < 3) return fail(new Error('Please write the payment reference.'));
+    let agencyRef;
+    if (p) {
+      agencyRef = window.prompt(`2/2  Pay ${usd(p.agencyCents)} (${p.percent}% agency commission) by PayPal to ${p.paypalEmail} (agency ${p.agencyName}), then write the PayPal transaction id:`);
+      if (agencyRef === null) return;
+      if (agencyRef.trim().length < 3) return fail(new Error('Please write the PayPal payment reference of the agency commission.'));
+    }
     setBusy(w.id);
     try {
-      await api(`/admin/withdrawals/${w.id}/approve`, 'POST', { paymentRef: ref.trim() });
-      ok(`Marked as paid: ${usd(w.amountCents)} to ${w.userName}.`);
+      await api(`/admin/withdrawals/${w.id}/approve`, 'POST', { paymentRef: ref.trim(), ...(p ? { agencyPaymentRef: agencyRef.trim() } : {}) });
+      ok(`Marked as paid: ${usd(w.amountCents)} (${w.userName}${p ? ` + agency commission ${usd(p.agencyCents)}` : ''}).`);
       await load();
     } catch (e) {
       fail(e);
@@ -86,7 +95,7 @@ export default function Withdrawals({ role }) {
       <div className="head"><h1>Withdrawals</h1></div>
       <p className="muted small">
         When someone asks for a withdrawal the amount leaves their balance at once. Pay it with the details below, then press <b>Mark as paid</b> and write the payment
-        reference. Reject if something is wrong: the money returns to the person. Every decision is saved in the audit log.
+        reference. If the person is a host of an agency, the <b>agency commission</b> is shown separately: pay that part to the owner's PayPal and write its reference too. Reject if something is wrong: the money returns to the person. Every decision is saved in the audit log.
       </p>
 
       <div className="tabs">
@@ -111,7 +120,18 @@ export default function Withdrawals({ role }) {
                 <td className="small">{when(w.createdAt)}</td>
                 <td>{w.userName}<div className="muted small mono">ID {w.userId}</div></td>
                 <td><b>{usd(w.amountCents)}</b></td>
-                <td><Details d={w.details} /></td>
+                <td>
+                  <Details d={w.details} />
+                  {w.agencyPayout && (
+                    <div className="split-box">
+                      <div>Host gets <b>{usd(w.agencyPayout.hostCents)}</b> (above)</div>
+                      <div>Agency owner gets <b>{usd(w.agencyPayout.agencyCents)}</b> ({w.agencyPayout.percent}%) by <b>PayPal</b>:</div>
+                      <div className="mono">{w.agencyPayout.paypalEmail}</div>
+                      <div className="muted">{w.agencyPayout.agencyName}</div>
+                      {w.agencyPayout.paymentRef && <div className="muted mono">Ref {w.agencyPayout.paymentRef}</div>}
+                    </div>
+                  )}
+                </td>
                 <td>
                   <span className={`pill ${w.status === 'approved' ? 'active' : w.status === 'pending' ? 'suspended' : 'banned'}`}>{w.status === 'approved' ? 'paid' : w.status}</span>
                   {w.paymentRef && <div className="muted small mono">Ref {w.paymentRef}</div>}
