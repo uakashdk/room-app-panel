@@ -4,73 +4,143 @@ import { api } from '../api';
 const usd = (c) => `$${(Number(c || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const when = (ms) => (ms ? new Date(ms).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-');
 
-const GLOSS = `
-/* glossy finish: same colours, only sheen + highlights (scoped to the Withdrawals page) */
-.wdx h1 { text-shadow: 0 2px 14px rgba(244,197,66,.10); }
+/* Glossy premium finish. Translucent white/black layers only, so colours and theme stay unchanged. */
+const GLOSS_CSS = `
+.gloss-page .card{
+  position:relative;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(0,0,0,.35),
+    0 14px 36px rgba(0,0,0,.45);
+}
+.gloss-page .card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.03) 38%,rgba(255,255,255,0) 60%);
+  pointer-events:none;
+}
+.gloss-page .card > *{position:relative;}
+.gloss-page .table-wrap{overflow-x:auto;}
 
-/* glossy pill tabs (like Agencies / Host requests) */
-.wdx .tabs { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; }
-.wdx .tabs .tab {
-  position: relative; overflow: hidden; display: inline-flex; align-items: center; cursor: pointer;
-  margin: 0 !important; padding: 10px 20px !important; border-radius: 16px !important;
-  border: 1px solid rgba(255,255,255,.16) !important; border-top: 1px solid rgba(255,255,255,.2) !important; border-bottom: 1px solid rgba(255,255,255,.1) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%, rgba(0,0,0,.18)) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), inset 0 -2px 5px rgba(0,0,0,.35), 0 4px 12px rgba(0,0,0,.3) !important;
-  transition: border-color .15s, transform .15s, color .15s;
+.gloss-page .tabs{gap:10px;}
+.gloss-page .tab{
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -8px 14px rgba(0,0,0,.25),
+    0 4px 10px rgba(0,0,0,.35);
+  transition:transform .15s ease,box-shadow .15s ease;
 }
-.wdx .tabs .tab::before {
-  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
-  border-radius: 13px 13px 50% 50% / 13px 13px 10px 10px;
-  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0));
+.gloss-page .tab::before{
+  content:'';
+  position:absolute;
+  left:0;right:0;top:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0));
+  pointer-events:none;
 }
-.wdx .tabs .tab:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.3) !important; }
-.wdx .tabs .tab.active {
-  border: 1px solid rgba(255,255,255,.38) !important;
-  background: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,.08) 50%, rgba(0,0,0,.22)) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -3px 6px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.4) !important;
-  text-shadow: 0 0 14px rgba(244,197,66,.35);
-}
-.wdx .tabs .tab.active::before { background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.02)); }
-
-/* table card: curved light sheen at the top, glass edge */
-.wdx .card {
-  border: 1px solid rgba(255,255,255,.2);
-  background-image:
-    radial-gradient(120% 38% at 50% -6%, rgba(255,255,255,.17), rgba(255,255,255,.04) 55%, transparent 72%),
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 40%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1px 0 rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.45);
-}
-
-/* table */
-.wdx thead th {
-  background-image: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.03));
-  border-bottom: 1px solid rgba(255,255,255,.16);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
-}
-.wdx tbody td { border-bottom: 1px solid rgba(255,255,255,.07); }
-.wdx tbody tr:hover td { background-image: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01)); }
-
-/* status pills */
-.wdx .pill {
-  border: 1px solid rgba(255,255,255,.22);
-  background-image: linear-gradient(180deg, rgba(255,255,255,.26) 0%, rgba(255,255,255,.06) 50%, rgba(0,0,0,.14) 51%, rgba(0,0,0,.02) 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 2px rgba(0,0,0,.25), 0 3px 8px rgba(0,0,0,.3);
+.gloss-page .tab:hover{transform:translateY(-1px);}
+.gloss-page .tab.active{
+  border-color:rgba(255,255,255,.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -8px 14px rgba(0,0,0,.30),
+    0 6px 16px rgba(0,0,0,.50);
 }
 
-/* buttons: keep their own colours, add the glossy highlight on top */
-.wdx .btn {
-  position: relative; overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,.28);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 6px rgba(0,0,0,.3), 0 8px 20px -8px rgba(0,0,0,.6);
-  transition: transform .15s, filter .15s, border-color .15s;
+.gloss-page .btn{
+  position:relative;
+  overflow:hidden;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -6px 10px rgba(0,0,0,.22),
+    0 4px 12px rgba(0,0,0,.40);
+  transition:transform .15s ease,filter .15s ease,box-shadow .15s ease;
 }
-.wdx .btn::before {
-  content: ''; position: absolute; left: 4px; right: 4px; top: 1px; height: 48%; pointer-events: none;
-  border-radius: 10px 10px 50% 50% / 10px 10px 8px 8px;
-  background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.05));
+.gloss-page .btn::before{
+  content:'';
+  position:absolute;
+  left:0;right:0;top:0;height:52%;
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.02));
+  pointer-events:none;
 }
-.wdx .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
-.wdx .btn:active:not(:disabled) { transform: translateY(1px); }
-.wdx .btn:disabled { cursor: not-allowed; }
+.gloss-page .btn:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.08);}
+.gloss-page .btn:active:not(:disabled){
+  transform:translateY(1px);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.40),0 1px 3px rgba(0,0,0,.40);
+}
+.gloss-page .btn:disabled{opacity:.6;cursor:not-allowed;}
+.gloss-page .btn.sm{border-radius:10px;}
+.gloss-page td .btn + .btn{margin-left:8px;}
+
+.gloss-page table{border-collapse:separate;border-spacing:0;width:100%;}
+.gloss-page thead th{
+  background-image:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.12);
+}
+.gloss-page tbody td{border-bottom:1px solid rgba(255,255,255,.07);vertical-align:top;}
+.gloss-page tbody tr{transition:background-color .15s ease;}
+.gloss-page tbody tr:hover{background-color:rgba(255,255,255,.04);}
+.gloss-page tbody tr:last-child td{border-bottom:0;}
+
+.gloss-page .pill{
+  position:relative;
+  overflow:hidden;
+  border-radius:999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -4px 8px rgba(0,0,0,.20),
+    0 2px 6px rgba(0,0,0,.35);
+}
+.gloss-page .pill::before{
+  content:'';
+  position:absolute;
+  left:0;right:0;top:0;height:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));
+  pointer-events:none;
+}
+
+/* agency payout box inside the "Pay to" cell */
+.gloss-page .split-box{
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -8px 14px rgba(0,0,0,.18),
+    0 2px 8px rgba(0,0,0,.30);
+}
+
+.gloss-page .box{
+  position:relative;
+  overflow:hidden;
+  border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 16px rgba(0,0,0,.35);
+}
+.gloss-page .box::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0) 55%);
+  pointer-events:none;
+}
+
+.gloss-page .btn:focus-visible,
+.gloss-page .tab:focus-visible{outline:2px solid rgba(255,255,255,.6);outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){
+  .gloss-page *{transition:none !important;}
+}
 `;
 
 /** The payment details the admin needs to pay the person (shown in full, only to a Super admin). */
@@ -117,13 +187,22 @@ export default function Withdrawals({ role }) {
   useEffect(() => { load(); }, [load]);
 
   const approve = async (w) => {
-    const ref = window.prompt(`Pay ${usd(w.amountCents)} to ${w.userName} first, then write the payment reference (UTR / transaction id):`);
+    const p = w.agencyPayout;
+    const ref = window.prompt(p
+      ? `1/2  Pay ${usd(p.hostCents)} to ${w.userName} (bank / UPI details in the table) first, then write that payment reference (UTR / transaction id):`
+      : `Pay ${usd(w.amountCents)} to ${w.userName} first, then write the payment reference (UTR / transaction id):`);
     if (ref === null) return;
     if (ref.trim().length < 3) return fail(new Error('Please write the payment reference.'));
+    let agencyRef;
+    if (p) {
+      agencyRef = window.prompt(`2/2  Pay ${usd(p.agencyCents)} (${p.percent}% agency commission) by PayPal to ${p.paypalEmail} (agency ${p.agencyName}), then write the PayPal transaction id:`);
+      if (agencyRef === null) return;
+      if (agencyRef.trim().length < 3) return fail(new Error('Please write the PayPal payment reference of the agency commission.'));
+    }
     setBusy(w.id);
     try {
-      await api(`/admin/withdrawals/${w.id}/approve`, 'POST', { paymentRef: ref.trim() });
-      ok(`Marked as paid: ${usd(w.amountCents)} to ${w.userName}.`);
+      await api(`/admin/withdrawals/${w.id}/approve`, 'POST', { paymentRef: ref.trim(), ...(p ? { agencyPaymentRef: agencyRef.trim() } : {}) });
+      ok(`Marked as paid: ${usd(w.amountCents)} (${w.userName}${p ? ` + agency commission ${usd(p.agencyCents)}` : ''}).`);
       await load();
     } catch (e) {
       fail(e);
@@ -148,14 +227,21 @@ export default function Withdrawals({ role }) {
     }
   };
 
-  if (!canEdit) return (<><div className="head"><h1>Withdrawals</h1></div><p className="muted pad">Only a Super admin can handle withdrawals.</p></>);
+  if (!canEdit) return (
+    <div className="gloss-page">
+      <style>{GLOSS_CSS}</style>
+      <div className="head"><h1>Withdrawals</h1></div>
+      <p className="muted pad">Only a Super admin can handle withdrawals.</p>
+    </div>
+  );
 
   return (
-    <><style>{GLOSS}</style><div className="wdx">
+    <div className="gloss-page">
+      <style>{GLOSS_CSS}</style>
       <div className="head"><h1>Withdrawals</h1></div>
       <p className="muted small">
         When someone asks for a withdrawal the amount leaves their balance at once. Pay it with the details below, then press <b>Mark as paid</b> and write the payment
-        reference. Reject if something is wrong: the money returns to the person. Every decision is saved in the audit log.
+        reference. If the person is a host of an agency, the <b>agency commission</b> is shown separately: pay that part to the owner's PayPal and write its reference too. Reject if something is wrong: the money returns to the person. Every decision is saved in the audit log.
       </p>
 
       <div className="tabs">
@@ -180,7 +266,18 @@ export default function Withdrawals({ role }) {
                 <td className="small">{when(w.createdAt)}</td>
                 <td>{w.userName}<div className="muted small mono">ID {w.userId}</div></td>
                 <td><b>{usd(w.amountCents)}</b></td>
-                <td><Details d={w.details} /></td>
+                <td>
+                  <Details d={w.details} />
+                  {w.agencyPayout && (
+                    <div className="split-box">
+                      <div>Host gets <b>{usd(w.agencyPayout.hostCents)}</b> (above)</div>
+                      <div>Agency owner gets <b>{usd(w.agencyPayout.agencyCents)}</b> ({w.agencyPayout.percent}%) by <b>PayPal</b>:</div>
+                      <div className="mono">{w.agencyPayout.paypalEmail}</div>
+                      <div className="muted">{w.agencyPayout.agencyName}</div>
+                      {w.agencyPayout.paymentRef && <div className="muted mono">Ref {w.agencyPayout.paymentRef}</div>}
+                    </div>
+                  )}
+                </td>
                 <td>
                   <span className={`pill ${w.status === 'approved' ? 'active' : w.status === 'pending' ? 'suspended' : 'banned'}`}>{w.status === 'approved' ? 'paid' : w.status}</span>
                   {w.paymentRef && <div className="muted small mono">Ref {w.paymentRef}</div>}
@@ -189,7 +286,7 @@ export default function Withdrawals({ role }) {
                 </td>
                 {status === 'pending' && (
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn sm" disabled={busy === w.id} onClick={() => approve(w)}>Mark as paid</button>{' '}
+                    <button className="btn sm" disabled={busy === w.id} onClick={() => approve(w)}>Mark as paid</button>
                     <button className="btn danger sm" disabled={busy === w.id} onClick={() => reject(w)}>Reject</button>
                   </td>
                 )}
@@ -198,6 +295,6 @@ export default function Withdrawals({ role }) {
           </tbody>
         </table>
       </div>
-    </div></>
+    </div>
   );
 }

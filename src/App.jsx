@@ -16,11 +16,16 @@ import Users from "./pages/Users.jsx";
 import Vip from "./pages/Vip.jsx";
 import Withdrawals from "./pages/Withdrawals.jsx";
 import AdminAccess from './pages/AdminAccess.jsx';
+import Dashboard from "./pages/Dashboard.jsx";
+import Settings from "./pages/Setting.jsx";
+import Hosts from "./pages/Hosts.jsx";
 
 const STAFF_ROLES = ["admin", "super_admin"];
 const PAGES = {
+  Dashboard,
   Users,
   Admin: AdminAccess,
+  Hosts,
   Agencies,
   Rooms,
   Banners,
@@ -33,12 +38,13 @@ const PAGES = {
   "Salary Approval": Salary,
   Withdrawals,
   "Host Policy": HostPolicy,
+  Settings,
 };
-const SOON = ["Dashboard", "Gifts", "Hosts", "Settings"];
+const SOON = ["Gifts"];
 
 export default function App() {
   const [s, setS] = useState({ loading: true, user: null, role: null });
-  const [page, setPage] = useState("Users");
+  const [page, setPage] = useState("Dashboard");
 
   useEffect(
     () =>
