@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { api } from '../api';
+import PermissionsModal from './PermissionsModal.jsx';
 
 const PAGE = 50;
 
@@ -85,6 +86,7 @@ export default function Users({ staff, role }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [permTarget, setPermTarget] = useState(null); // user whose menu permissions popup is open
 
   const load = useCallback(async (t) => {
     setLoading(true);
@@ -143,6 +145,28 @@ export default function Users({ staff, role }) {
     } catch (e) {
       const m = String(e.message || e);
       setError(/cannot reach|failed to fetch|network|404|not found/i.test(m)
+        ? 'This is not available yet: the backend is not connected or does not have this feature. Nothing was changed.'
+        : m);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+    // Called by the popup's "Make Admin" button, with the menus the super admin ticked
+  const makeAdminWithMenus = async (u, menus) => {
+    setBusyId(u.id);
+    setError('');
+    setNote('');
+    try {
+      if (!PREVIEW_ONLY) await api('/admin/set-role', 'POST', { uid: u.id, role: 'admin', menus });
+      setRows((r) => r.map((x) => (x.id === u.id ? { ...x, role: 'admin', menus } : x)));
+      setNote(PREVIEW_ONLY
+        ? `Preview only: ${u.name} looks like an Admin with ${menus.length} menus on this screen, but nothing was saved because the backend is not connected yet.`
+        : `${u.name} is now an Admin with ${menus.length} menus. They must sign out and sign in again to see the panel.`);
+    } catch (e) {
+      const m = String(e.message || e);
+      // the popup shows this message and stays open
+      throw new Error(/cannot reach|failed to fetch|network|404|not found/i.test(m)
         ? 'This is not available yet: the backend is not connected or does not have this feature. Nothing was changed.'
         : m);
     } finally {
@@ -461,7 +485,7 @@ export default function Users({ staff, role }) {
               if (isSuper && !self && u.role !== 'super_admin') {
                 items.push(u.role === 'admin'
                   ? { label: 'Remove Admin', danger: true, onClick: () => setAdminRole(u, false) }
-                  : { label: 'Make Admin', onClick: () => setAdminRole(u, true) });
+                  : { label: 'Make Admin', onClick: () => setPermTarget(u) });
               }
               return (
                 <tr key={u.id}>
@@ -493,6 +517,22 @@ export default function Users({ staff, role }) {
       <p className="muted small">
         Showing up to {PAGE} users. "Make host" is a temporary shortcut so Top Hosts has data; the real host application and approval flow comes later.
       </p>
+            <p className="muted small">
+        Showing up to {PAGE} users. "Make host" is a temporary shortcut so Top Hosts has data; the real host application and approval flow comes later.
+      </p>
+
+      {permTarget && createPortal(
+        <PermissionsModal
+          user={permTarget}
+          initial={permTarget.menus}
+          onClose={() => setPermTarget(null)}
+          onSave={async (menus) => {
+            await makeAdminWithMenus(permTarget, menus);
+            setPermTarget(null);
+          }}
+        />,
+        document.body,
+      )}
     </div>
   );
 }
