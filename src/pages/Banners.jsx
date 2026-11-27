@@ -1,7 +1,14 @@
 import CrudPage from "./CrudPage.jsx";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8790";
 
 const fields = [
-  { key: "title", label: "Title", type: "text", required: true, wide: true },
+  {
+    key: "imageUrl",
+    label: "Banner image (optional if you add a title)",
+    type: "image",
+    wide: true,
+  },
+  { key: "title", label: "Title", type: "text", wide: true },
   { key: "eyebrow", label: "Small text above title", type: "text", wide: true },
   { key: "subtitle", label: "Subtitle", type: "text", wide: true },
   {
@@ -21,7 +28,17 @@ const fields = [
 
 const columns = [
   { key: "order", label: "Order" },
-  { key: "title", label: "Title" },
+  {
+    key: "imageUrl",
+    label: "Image",
+    render: (r) =>
+      r.imageUrl ? (
+        <img className="thumb" src={`${API_URL}${r.imageUrl}`} alt="" />
+      ) : (
+        "-"
+      ),
+  },
+  { key: "title", label: "Title", render: (r) => r.title || "-" },
   { key: "theme", label: "Colour" },
   { key: "active", label: "Active", render: (r) => (r.active ? "Yes" : "No") },
 ];
@@ -87,7 +104,57 @@ export default function Banners({ staff }) {
         }
         .bn-wrap .card > * { position: relative; }
         .bn-wrap .card.form { padding: 26px 26px 22px; margin-bottom: 22px; }
-        .bn-wrap .card.form .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+        .bn-wrap .card.form .grid {
+          display: grid;
+          grid-template-columns: repeat(12, minmax(0, 1fr));
+          gap: 18px 20px;
+          align-items: end;
+        }
+
+        /* default field = 3 of 12 columns, so four fit in one row */
+        .bn-wrap .card.form .grid > .field { grid-column: span 3; }
+
+        /* image picker = full row */
+        .bn-wrap .card.form .grid > .wide { grid-column: 1 / -1; }
+
+        /* Title, Small text, Subtitle = three equal fields in one row */
+        .bn-wrap .card.form .grid > :nth-child(n+2):nth-child(-n+4) { grid-column: span 4; }
+
+        /* same label height everywhere */
+        .bn-wrap .field > span { min-height: 16px; }
+
+        /* Active checkbox: same height as the input fields */
+        .bn-wrap .field.check {
+          flex-direction: row;
+          align-items: center;
+          gap: 12px;
+          min-height: 40px;
+        }
+
+         /* every input, dropdown and file picker gets the same height, so the rows line up */
+        .bn-wrap .field input:not([type="checkbox"]):not([type="file"]),
+        .bn-wrap .field select {
+          height: 44px;
+          box-sizing: border-box;
+        }
+
+        /* the dropdown text stays vertically centred inside that height */
+        .bn-wrap .field select { padding-top: 0; padding-bottom: 0; align-items: center; }
+
+        /* labels: reserve two lines so a long label (Button text) does not push its field down */
+        .bn-wrap .field > span { min-height: 30px; display: flex; align-items: flex-end; }
+
+        @media (max-width: 900px) {
+          .bn-wrap .card.form .grid > .field,
+          .bn-wrap .card.form .grid > :nth-child(n+2):nth-child(-n+4) { grid-column: span 6; }
+          .bn-wrap .card.form .grid > .wide { grid-column: 1 / -1; }
+        }
+        @media (max-width: 560px) {
+          .bn-wrap .card.form .grid > .field,
+          .bn-wrap .card.form .grid > :nth-child(n+2):nth-child(-n+4) { grid-column: 1 / -1; }
+        }
+
         .bn-wrap .card.form .wide { grid-column: 1 / -1; }
         .bn-wrap .card.form .acts { margin-top: 20px; }
 
@@ -107,13 +174,13 @@ export default function Banners({ staff }) {
         .bn-wrap .search input {
           width: 100%;
           box-sizing: border-box;
-          padding: 14px 16px;
-          border-radius: 14px;
+          padding: 9px 14px;
+          border-radius: 12px;
           border: 1px solid rgba(255,255,255,0.16);
           background-color: rgba(255,255,255,0.05);
           background-image: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%);
           color: inherit;
-          font-size: 15px;
+          font-size: 14px;
           outline: none;
           box-shadow:
             inset 0 3px 8px rgba(0,0,0,0.30),
@@ -125,15 +192,15 @@ export default function Banners({ staff }) {
         .bn-wrap .field select:focus,
         .bn-wrap .field textarea:focus,
         .bn-wrap .search input:focus {
-          border-color: rgba(255,255,255,0.5);
-          background-color: rgba(255,255,255,0.09);
-          transform: translateY(-1px);
+          border-color: #f4c542;
+          background-color: rgba(255,255,255,0.07);
           box-shadow:
-            0 0 0 4px rgba(255,255,255,0.08),
-            0 8px 22px -8px rgba(255,255,255,0.18),
-            inset 0 3px 8px rgba(0,0,0,0.22),
-            inset 0 1px 0 rgba(255,255,255,0.2);
+            0 0 0 3px rgba(244,197,66,0.18),
+            0 0 22px 2px rgba(244,197,66,0.35),
+            0 10px 26px -6px rgba(244,197,66,0.55),
+            inset 0 2px 6px rgba(0,0,0,0.25);
         }
+        .bn-wrap .field input[type="file"] { padding: 6px 10px; }
 
         /* glossy checkbox */
         .bn-wrap input[type="checkbox"] {
@@ -295,6 +362,8 @@ export default function Banners({ staff }) {
         .bn-wrap .error.box { background-color: rgba(255,70,70,0.10); border: 1px solid rgba(255,90,90,0.4); animation: bn-shake .4s ease; }
         .bn-wrap .ok.box { border: 1px solid rgba(255,255,255,0.22); }
         .bn-wrap p.muted.small { line-height: 1.6; margin-bottom: 16px; }
+        .bn-wrap .thumb { width: 120px; height: 56px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.18); display: block; }
+        .bn-wrap .thumb.big { width: 220px; height: 100px; }
 
         @keyframes bn-rise { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
         @keyframes bn-row { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
@@ -414,38 +483,81 @@ export default function Banners({ staff }) {
           }
         }
           /* ================= NUMBER FIELD: NO SPINNER ================= */
-.bn-wrap input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-  padding-right: 16px;
-}
-.bn-wrap input[type="number"]::-webkit-outer-spin-button,
-.bn-wrap input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-  margin: 0;
-}
-          /* ================= GLOSSY NUMBER SPINNER ================= */
+        .bn-wrap input[type="number"] {
+          -moz-appearance: textfield;
+          appearance: textfield;
+          padding-right: 16px;
+        }
+        .bn-wrap input[type="number"]::-webkit-outer-spin-button,
+        .bn-wrap input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          appearance: none;
+          display: none;
+          margin: 0;
+        }
+                  /* ================= GLOSSY NUMBER SPINNER ================= */
 
-/* hide the native white spinner box */
-.bn-wrap input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-  padding-right: 52px;
-}
-.bn-wrap input[type="number"]::-webkit-inner-spin-button,
-.bn-wrap input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+        /* hide the native white spinner box */
+        .bn-wrap input[type="number"] {
+          -moz-appearance: textfield;
+          appearance: textfield;
+          padding-right: 52px;
+        }
+        .bn-wrap input[type="number"]::-webkit-inner-spin-button,
+        .bn-wrap input[type="number"]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
 
+                /* ===== FORCE ALIGNMENT OF THE FORM ROWS ===== */
+        .bn-wrap .card.form .grid { align-items: start !important; }
+
+        /* every label takes the same space (two lines), so all fields start at the same height */
+        .bn-wrap .card.form .field > span {
+          min-height: 30px !important;
+          display: flex !important;
+          align-items: flex-end !important;
+        }
+
+        /* every input and the dropdown: same height, no extra margin */
+        .bn-wrap .card.form .field input:not([type="checkbox"]):not([type="file"]),
+        .bn-wrap .card.form .field select {
+          height: 44px !important;
+          min-height: 44px !important;
+          margin: 0 !important;
+          box-sizing: border-box !important;
+          transform: none !important;
+        }
+
+            /* Active checkbox: sits on the same line as the input fields */
+            .bn-wrap .card.form .field.check {
+              align-self: start !important;
+              min-height: 0 !important;
+              padding-top: 38px !important;
+            }
+
+            /* Active checkbox row: label centred on the checkbox */
+            .bn-wrap .card.form .field.check {
+              flex-direction: row !important;
+              align-items: center !important;
+              gap: 12px !important;
+              padding-top: 38px !important;
+            }
+            .bn-wrap .card.form .field.check > span {
+              min-height: 0 !important;
+              height: auto !important;
+              display: block !important;
+              line-height: 1 !important;
+              align-self: center !important;
+              margin: 0 !important;
+            }
 
       `}</style>
 
       <CrudPage
         staff={staff}
         title="Banners"
+        requireOneOf={["title", "imageUrl"]}
         noun="banner"
         collectionName="banners"
         fields={fields}

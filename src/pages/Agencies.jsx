@@ -105,12 +105,17 @@ const GLOSS_CSS = `
 .gloss-page .field select:focus,
 .gloss-page .field textarea:focus{
   outline:none;
-  border-color:rgba(255,255,255,.40);
+  border-color:#f4c542;
+  background-color:rgba(255,255,255,.07);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.16),
-    inset 0 -10px 16px rgba(0,0,0,.25),
-    0 0 0 3px rgba(255,255,255,.10);
+    0 0 0 3px rgba(244,197,66,.18),
+    0 0 22px 2px rgba(244,197,66,.35),
+    0 10px 26px -6px rgba(244,197,66,.55),
+    inset 0 2px 6px rgba(0,0,0,.25);
 }
+
+/* the small label turns gold too while its field is selected */
+.gloss-page .field:focus-within > span{color:#f4c542;opacity:1;}
 
 .gloss-page table{border-collapse:separate;border-spacing:0;width:100%;}
 .gloss-page thead th{
@@ -167,6 +172,7 @@ const GLOSS_CSS = `
   gap:6px;
 }
 .gloss-page .form .field input{width:100%;box-sizing:border-box;}
+.gloss-page .card.form{overflow:visible;}
 `;
 
 export default function Agencies({ role }) {

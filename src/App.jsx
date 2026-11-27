@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import Login from './pages/Login.jsx';
@@ -20,9 +20,10 @@ import Dashboard from './pages/Dashboard.jsx';
 import Settings from './pages/Setting.jsx';
 import Hosts from './pages/Hosts.jsx';
 import Games from './pages/Games.jsx';
+import CoinTransactions from './pages/CoinTransactions.jsx';
 
 const STAFF_ROLES = ['admin', 'super_admin'];
-const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games, 'Coin Packages': CoinPackages, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
+const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games, 'Coin Packages': CoinPackages,'Coin Transactions': CoinTransactions, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
 const SOON = ['Gifts'];
 
 const GLOSS_CSS = `
@@ -155,11 +156,27 @@ const GLOSS_CSS = `
   box-shadow: inset 0 1px 0 rgba(255,255,255,.4);
 }
 *::-webkit-scrollbar-thumb:hover { background: linear-gradient(90deg, rgba(255,255,255,.5), rgba(255,255,255,.2)); }
+
+/* ---------- sidebar and page scroll separately ---------- */
+.layout { height: 100vh !important; overflow: hidden !important; }
+.sidebar {
+  height: 100vh !important;
+  overflow-y: auto !important;   /* the menu scrolls by itself if the screen is short */
+  overflow-x: hidden !important;
+  box-sizing: border-box;
+}
+.main {
+  height: 100vh !important;
+  overflow-y: auto !important;   /* only the page content scrolls */
+  box-sizing: border-box;
+}
+
 `;
 
 export default function App() {
   const [s, setS] = useState({ loading: true, user: null, role: null });
   const [page, setPage] = useState('Users');
+  const mainRef = useRef(null);
 
   useEffect(
     () =>
@@ -171,6 +188,12 @@ export default function App() {
       }),
     [],
   );
+
+  // every time another menu is opened, show that page from the top
+useEffect(() => {
+  mainRef.current?.scrollTo({ top: 0 });
+  window.scrollTo({ top: 0 });
+}, [page]);
 
   if (s.loading) return <div className="center muted">Loading...</div>;
   if (!s.user) return <Login />;
@@ -212,7 +235,7 @@ export default function App() {
           <button className="btn ghost" onClick={() => signOut(auth)}>Sign out</button>
         </div>
       </aside>
-      <main className="main">
+      <main className="main" ref={mainRef}>
         {(() => { const Page = PAGES[page]; return <Page staff={s.user} role={s.role} />; })()}
       </main>
     </div>

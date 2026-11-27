@@ -159,8 +159,10 @@ const GLOSS_CSS = `
   background-image:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 60%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -12px 18px rgba(0,0,0,.28),0 3px 8px rgba(0,0,0,.34);
   transition:border-color .15s ease,box-shadow .15s ease;}
-.gloss-page .field input:focus{outline:none;border-color:rgba(255,255,255,.45);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -12px 18px rgba(0,0,0,.28),0 0 0 3px rgba(255,255,255,.11),0 0 18px rgba(244,197,66,.12);}
+.gloss-page .field input:focus{outline:none; border-color:#f4c542; background-color:rgba(255,255,255,.07); box-shadow: 0 0 0 3px rgba(244,197,66,.18), 0 0 22px 2px rgba(244,197,66,.35), 0 10px 26px -6px rgba(244,197,66,.55), inset 0 2px 6px rgba(0,0,0,.25);}
+
+/* the small label turns gold too while its field is selected */
+.gloss-page .field:focus-within > span{color:#f4c542;opacity:1;}
 .gloss-page .field input:disabled{opacity:.55;}
 .gloss-page .sub{margin:12px 0 0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.8;}
 

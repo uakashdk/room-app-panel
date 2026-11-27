@@ -16,6 +16,11 @@ const columns = [
   { key: 'category', label: 'Category' },
   { key: 'listeners', label: 'Listeners' },
   { key: 'isLive', label: 'Live', render: (r) => (r.isLive ? 'Yes' : 'No') },
+  { key: 'level', label: 'Level', render: (r) => r.level ?? 1 },
+  // this week's progress (restarts every Monday, India time): the room goes up a level when a goal is reached (default 20,000 coins / 600 min)
+  { key: 'weekGiftCoins', label: 'Gift coins this week', render: (r) => Number(r.weekGiftCoins ?? 0).toLocaleString('en-US') },
+  { key: 'weekFullMinutes', label: 'Full-seat min this week', render: (r) => Math.round(Number(r.weekFullMinutes ?? 0)).toLocaleString('en-US') },
+  { key: 'giftCoins', label: 'Gift coins (all time)', render: (r) => Number(r.giftCoins ?? 0).toLocaleString('en-US') },
   { key: 'theme', label: 'Colour' },
 ];
 
@@ -105,14 +110,14 @@ export default function Rooms({ staff }) {
         .rm-wrap .field select:focus,
         .rm-wrap .field textarea:focus,
         .rm-wrap .search input:focus {
-          border-color: rgba(255,255,255,0.5);
-          background-color: rgba(255,255,255,0.09);
-          transform: translateY(-1px);
+          border-color: #f4c542;
+          background-color: rgba(255,255,255,0.07);
+          transform: none;
           box-shadow:
-            0 0 0 4px rgba(255,255,255,0.08),
-            0 8px 22px -8px rgba(255,255,255,0.18),
-            inset 0 3px 8px rgba(0,0,0,0.22),
-            inset 0 1px 0 rgba(255,255,255,0.2);
+            0 0 0 3px rgba(244,197,66,0.18),
+            0 0 22px 2px rgba(244,197,66,0.35),
+            0 10px 26px -6px rgba(244,197,66,0.55),
+            inset 0 2px 6px rgba(0,0,0,0.25);
         }
 
         /* glossy checkbox (for "Live now") */
@@ -284,122 +289,122 @@ export default function Rooms({ staff }) {
         }
           /* ================= GLOSSY DROPDOWNS ================= */
 
-/* closed select box: custom glossy arrow, no native chrome */
-.rm-wrap .card select,
-.rm-wrap .field select {
-  color-scheme: dark;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  padding-right: 46px;
-  background-color: rgba(255,255,255,0.05);
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none' stroke='%23ffffff' stroke-opacity='.75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l6 6 6-6'/%3E%3C/svg%3E"),
-    linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.14));
-  background-repeat: no-repeat, no-repeat;
-  background-position: right 18px center, 0 0;
-  background-size: 14px 9px, 100% 100%;
-}
-.rm-wrap .card select:hover,
-.rm-wrap .field select:hover { filter: brightness(1.12); }
+        /* closed select box: custom glossy arrow, no native chrome */
+        .rm-wrap .card select,
+        .rm-wrap .field select {
+          color-scheme: dark;
+          appearance: none;
+          -webkit-appearance: none;
+          cursor: pointer;
+          padding-right: 46px;
+          background-color: rgba(255,255,255,0.05);
+          background-image:
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9' fill='none' stroke='%23ffffff' stroke-opacity='.75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l6 6 6-6'/%3E%3C/svg%3E"),
+            linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.14));
+          background-repeat: no-repeat, no-repeat;
+          background-position: right 18px center, 0 0;
+          background-size: 14px 9px, 100% 100%;
+        }
+        .rm-wrap .card select:hover,
+        .rm-wrap .field select:hover { filter: brightness(1.12); }
 
-/* fallback list (browsers without styleable pickers): dark, readable */
-.rm-wrap select option {
-  color: CanvasText;
-  background-color: Canvas;
-  padding: 10px 14px;
-}
+        /* fallback list (browsers without styleable pickers): dark, readable */
+        .rm-wrap select option {
+          color: CanvasText;
+          background-color: Canvas;
+          padding: 10px 14px;
+        }
 
-/* ===== full glossy list in browsers that support styleable selects (Chrome/Edge) ===== */
-@supports (appearance: base-select) {
-  .rm-wrap .card select,
-  .rm-wrap .field select,
-  .rm-wrap .card select::picker(select),
-  .rm-wrap .field select::picker(select) {
-    appearance: base-select;
-  }
+        /* ===== full glossy list in browsers that support styleable selects (Chrome/Edge) ===== */
+        @supports (appearance: base-select) {
+          .rm-wrap .card select,
+          .rm-wrap .field select,
+          .rm-wrap .card select::picker(select),
+          .rm-wrap .field select::picker(select) {
+            appearance: base-select;
+          }
 
-  /* arrow now comes from ::picker-icon, so drop the background arrow */
-  .rm-wrap .card select,
-  .rm-wrap .field select {
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.14));
-    background-size: 100% 100%;
-    background-position: 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .rm-wrap select::picker-icon {
-    content: "";
-    width: 9px; height: 9px;
-    border: solid currentColor;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg) translateY(-2px);
-    opacity: 0.75;
-    transition: transform .25s ease;
-  }
-  .rm-wrap select:open::picker-icon { transform: rotate(225deg) translateY(-2px); }
+          /* arrow now comes from ::picker-icon, so drop the background arrow */
+          .rm-wrap .card select,
+          .rm-wrap .field select {
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.02) 50%, rgba(0,0,0,0.14));
+            background-size: 100% 100%;
+            background-position: 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .rm-wrap select::picker-icon {
+            content: "";
+            width: 9px; height: 9px;
+            border: solid currentColor;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translateY(-2px);
+            opacity: 0.75;
+            transition: transform .25s ease;
+          }
+          .rm-wrap select:open::picker-icon { transform: rotate(225deg) translateY(-2px); }
 
-  /* the dropdown panel */
-  .rm-wrap select::picker(select) {
-    margin-top: 8px;
-    padding: 8px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.22);
-    background-color: rgba(10,8,16,0.72);
-    background-image: linear-gradient(155deg,
-      rgba(255,255,255,0.16) 0%,
-      rgba(255,255,255,0.04) 35%,
-      rgba(255,255,255,0) 60%,
-      rgba(255,255,255,0.06) 100%);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
-    box-shadow:
-      0 30px 60px -20px rgba(0,0,0,0.7),
-      0 10px 24px rgba(0,0,0,0.4),
-      0 0 0 1px rgba(0,0,0,0.3),
-      inset 0 1.5px 0 rgba(255,255,255,0.4),
-      inset 0 -1.5px 0 rgba(0,0,0,0.35);
-    opacity: 0;
-    transform: translateY(-8px) scale(.98);
-    transition: opacity .2s ease, transform .2s ease, display .2s allow-discrete, overlay .2s allow-discrete;
-  }
-  .rm-wrap select:open::picker(select) { opacity: 1; transform: none; }
-  @starting-style {
-    .rm-wrap select:open::picker(select) { opacity: 0; transform: translateY(-8px) scale(.98); }
-  }
+          /* the dropdown panel */
+          .rm-wrap select::picker(select) {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.22);
+            background-color: rgba(10,8,16,0.72);
+            background-image: linear-gradient(155deg,
+              rgba(255,255,255,0.16) 0%,
+              rgba(255,255,255,0.04) 35%,
+              rgba(255,255,255,0) 60%,
+              rgba(255,255,255,0.06) 100%);
+            backdrop-filter: blur(22px) saturate(160%);
+            -webkit-backdrop-filter: blur(22px) saturate(160%);
+            box-shadow:
+              0 30px 60px -20px rgba(0,0,0,0.7),
+              0 10px 24px rgba(0,0,0,0.4),
+              0 0 0 1px rgba(0,0,0,0.3),
+              inset 0 1.5px 0 rgba(255,255,255,0.4),
+              inset 0 -1.5px 0 rgba(0,0,0,0.35);
+            opacity: 0;
+            transform: translateY(-8px) scale(.98);
+            transition: opacity .2s ease, transform .2s ease, display .2s allow-discrete, overlay .2s allow-discrete;
+          }
+          .rm-wrap select:open::picker(select) { opacity: 1; transform: none; }
+          @starting-style {
+            .rm-wrap select:open::picker(select) { opacity: 0; transform: translateY(-8px) scale(.98); }
+          }
 
-  /* each option */
-  .rm-wrap select option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 14px;
-    margin: 2px 0;
-    border-radius: 11px;
-    border: 1px solid transparent;
-    color: inherit;
-    background: transparent;
-    font-size: 15px;
-    cursor: pointer;
-    transition: background .2s ease, transform .2s ease, border-color .2s ease;
-  }
-  .rm-wrap select option::checkmark { order: 1; margin-left: auto; opacity: .85; }
-  .rm-wrap select option:hover,
-  .rm-wrap select option:focus-visible {
-    border-color: rgba(255,255,255,0.22);
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.12));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 14px -8px rgba(0,0,0,0.6);
-    transform: translateX(2px);
-    outline: none;
-  }
-  .rm-wrap select option:checked {
-    border-color: rgba(255,255,255,0.3);
-    background-image: linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.06) 49%, rgba(0,0,0,0.16) 51%, rgba(0,0,0,0.04) 100%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -2px 4px rgba(0,0,0,0.25);
-    font-weight: 600;
-  }
-}
+          /* each option */
+          .rm-wrap select option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            margin: 2px 0;
+            border-radius: 11px;
+            border: 1px solid transparent;
+            color: inherit;
+            background: transparent;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background .2s ease, transform .2s ease, border-color .2s ease;
+          }
+          .rm-wrap select option::checkmark { order: 1; margin-left: auto; opacity: .85; }
+          .rm-wrap select option:hover,
+          .rm-wrap select option:focus-visible {
+            border-color: rgba(255,255,255,0.22);
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.20), rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.12));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 14px -8px rgba(0,0,0,0.6);
+            transform: translateX(2px);
+            outline: none;
+          }
+          .rm-wrap select option:checked {
+            border-color: rgba(255,255,255,0.3);
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.06) 49%, rgba(0,0,0,0.16) 51%, rgba(0,0,0,0.04) 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -2px 4px rgba(0,0,0,0.25);
+            font-weight: 600;
+          }
+        }
       `}
       </style>
 

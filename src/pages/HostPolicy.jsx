@@ -73,11 +73,12 @@ const GLOSS_CSS = `
 .gloss-page .card select:focus,
 .gloss-page .card textarea:focus{
   outline:none;
-  border-color:rgba(255,255,255,.40);
+  border-color:rgba(244,197,66,.85);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.16),
     inset 0 -10px 16px rgba(0,0,0,.25),
-    0 0 0 3px rgba(255,255,255,.10);
+    0 0 0 1px rgba(244,197,66,.35),
+    0 0 10px rgba(244,197,66,.22);
 }
 .gloss-page .card input[type=checkbox]{width:18px;height:18px;margin:0;cursor:pointer;flex:none;}
 
