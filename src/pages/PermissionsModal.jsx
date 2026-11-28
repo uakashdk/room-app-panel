@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 export const ALL_MENUS = [
   'Users', 'Agencies', 'Rooms', 'Banners', 'Posts', 'Reports', 'Economy',
   'Games', 'Coin Packages', 'VIP', 'Transactions', 'Salary Approval',
-  'Withdrawals', 'Host Policy',
+  'Withdrawals', 'Host Policy', 'Coin Sellers',
 ];
 
 const CSS = `

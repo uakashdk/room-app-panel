@@ -22,9 +22,10 @@ import Settings from './pages/Setting.jsx';
 import Hosts from './pages/Hosts.jsx';
 import Games from './pages/Games.jsx';
 import CoinTransactions from './pages/CoinTransactions.jsx';
+import CoinSellers from './pages/CoinSellers.jsx';
 
 const STAFF_ROLES = ['admin', 'super_admin'];
-const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games,Levels, 'Coin Packages': CoinPackages,'Coin Transactions': CoinTransactions, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
+const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games, Levels, 'Coin Packages': CoinPackages,'Coin Transactions': CoinTransactions, 'Coin Sellers': CoinSellers, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
 const SOON = ['Gifts'];
 
 const GLOSS_CSS = `
