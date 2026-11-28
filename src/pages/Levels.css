@@ -205,3 +205,7 @@
 .lv-wrap .lv-list-acts { margin-top: 16px; }
 .lv-wrap .lv-sec .grid.lv-extra { margin-top: 22px; }
 .lv-wrap .box.lv-ok { color: var(--ok); }
+
+/* Save button lines up with the buttons inside the panels (panel padding 20px + 1px border) */
+.lv-wrap .lv-save-acts { margin-left: 21px; }
+@media (max-width: 560px) { .lv-wrap .lv-save-acts { margin-left: 15px; } }

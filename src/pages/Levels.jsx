@@ -166,7 +166,7 @@ export default function Levels({ role }) {
         </section>
 
         {canEdit && (
-          <div className="acts">
+          <div className="acts lv-save-acts">
             <button className="btn primary" disabled={saving || loading}>{saving ? 'Saving...' : 'Save'}</button>
           </div>
         )}
