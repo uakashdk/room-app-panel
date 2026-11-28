@@ -8,6 +8,7 @@ import Banners from './pages/Banners.jsx';
 import CoinPackages from './pages/CoinPackages.jsx';
 import Economy from './pages/Economy.jsx';
 import HostPolicy from './pages/HostPolicy.jsx';
+import Levels from './pages/Levels.jsx';
 import Posts from './pages/Posts.jsx';
 import Reports from './pages/Reports.jsx';
 import Rooms from './pages/Rooms.jsx';
@@ -23,7 +24,7 @@ import Games from './pages/Games.jsx';
 import CoinTransactions from './pages/CoinTransactions.jsx';
 
 const STAFF_ROLES = ['admin', 'super_admin'];
-const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games, 'Coin Packages': CoinPackages,'Coin Transactions': CoinTransactions, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
+const PAGES = { Dashboard, Users, Hosts, Agencies, Rooms, Banners, Posts, Reports, Economy, Arcade, Games,Levels, 'Coin Packages': CoinPackages,'Coin Transactions': CoinTransactions, VIP: Vip, Transactions, 'Salary Approval': Salary, Withdrawals, 'Host Policy': HostPolicy, Settings };
 const SOON = ['Gifts'];
 
 const GLOSS_CSS = `

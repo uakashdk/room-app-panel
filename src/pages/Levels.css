@@ -1,0 +1,207 @@
+/* ---------- HEADER ---------- */
+.lv-wrap .head { animation: lv-rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.lv-wrap .head h1, .lv-wrap h3 { text-shadow: 0 2px 12px rgba(0,0,0,0.35); letter-spacing: 0.01em; }
+.lv-wrap p.muted.small { line-height: 1.6; margin-bottom: 16px; }
+
+/* ---------- GLASS CARD ---------- */
+.lv-wrap .card {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  background-image: linear-gradient(155deg,
+    rgba(255,255,255,0.14) 0%,
+    rgba(255,255,255,0.04) 30%,
+    rgba(255,255,255,0) 55%,
+    rgba(255,255,255,0.06) 100%);
+  box-shadow:
+    0 40px 80px -28px rgba(0,0,0,0.65),
+    0 14px 30px rgba(0,0,0,0.28),
+    0 0 0 1px rgba(0,0,0,0.25),
+    inset 0 1.5px 0 rgba(255,255,255,0.42),
+    inset 0 -1.5px 0 rgba(0,0,0,0.35),
+    inset 0 0 40px rgba(255,255,255,0.035);
+  animation: lv-rise .7s cubic-bezier(.2,.8,.2,1) both;
+}
+.lv-wrap .card::before {
+  content: "";
+  position: absolute;
+  left: -8%; right: -8%; top: 0;
+  height: 110px;
+  border-radius: 0 0 50% 50% / 0 0 60% 60%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03) 85%, rgba(255,255,255,0));
+  pointer-events: none;
+}
+.lv-wrap .card > * { position: relative; }
+.lv-wrap .card.form { padding: 26px 26px 24px; margin-bottom: 22px; }
+
+/* ---------- SECTION PANELS (inner glass) ---------- */
+.lv-wrap .lv-sec {
+  position: relative;
+  padding: 20px 20px 22px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.10));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 12px 26px -16px rgba(0,0,0,0.6);
+}
+.lv-wrap .lv-sec h3 { margin: 0 0 6px; font-size: 17px; }
+.lv-wrap .lv-sec h3 small { font-weight: 500; opacity: 0.65; font-size: 13px; }
+.lv-wrap .lv-sec > p.muted.small { margin-bottom: 18px; }
+.lv-wrap .lv-sec .grid,
+.lv-wrap .lv-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px 20px;
+  align-items: start;
+}
+.lv-wrap .lv-sec .grid { margin-top: 16px; }
+.lv-wrap .lv-sec > .grid:first-of-type { margin-top: 0; }
+
+/* ---------- FIELDS ---------- */
+.lv-wrap .field { display: flex; flex-direction: column; gap: 8px; margin: 0 !important; }
+.lv-wrap .field > span:not(.small) {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.lv-wrap .field > span.small {
+  font-size: 12.5px;
+  line-height: 1.5;
+  opacity: 0.6;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.lv-wrap .field input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background-color: rgba(255,255,255,0.05);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%);
+  color: inherit;
+  font-size: 14px;
+  outline: none;
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,0.30),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 1px 0 rgba(255,255,255,0.10);
+  transition: border-color .25s, background-color .25s, box-shadow .25s, opacity .25s;
+}
+.lv-wrap .field input:focus {
+  border-color: #f4c542;
+  background-color: rgba(255,255,255,0.07);
+  box-shadow:
+    0 0 0 3px rgba(244,197,66,0.18),
+    0 0 22px 2px rgba(244,197,66,0.35),
+    0 10px 26px -6px rgba(244,197,66,0.55),
+    inset 0 2px 6px rgba(0,0,0,0.25);
+}
+.lv-wrap .field input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* no native spinner (white box on dark glass) */
+.lv-wrap input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.lv-wrap input[type="number"]::-webkit-inner-spin-button,
+.lv-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; display: none; }
+
+/* ---------- GLOSSY BUTTONS ---------- */
+.lv-wrap .btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 13px;
+  border: 1px solid rgba(255,255,255,0.26);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 13px 24px;
+  background-image: linear-gradient(180deg,
+    rgba(255,255,255,0.26) 0%,
+    rgba(255,255,255,0.06) 49%,
+    rgba(0,0,0,0.16) 51%,
+    rgba(0,0,0,0.04) 100%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  box-shadow:
+    0 10px 20px -10px rgba(0,0,0,0.6),
+    0 2px 4px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    inset 0 -3px 6px rgba(0,0,0,0.25),
+    inset 0 0 12px rgba(255,255,255,0.07);
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.lv-wrap .btn::before {
+  content: "";
+  position: absolute;
+  top: 1px; left: 3%; right: 3%;
+  height: 46%;
+  border-radius: 12px 12px 60% 60% / 12px 12px 30% 30%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.04));
+  pointer-events: none;
+}
+.lv-wrap .btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -130%;
+  width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.45), transparent);
+  transform: skewX(-20deg);
+  transition: left .8s ease;
+  pointer-events: none;
+}
+.lv-wrap .btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.1) saturate(1.05);
+  box-shadow:
+    0 16px 28px -10px rgba(0,0,0,0.65),
+    0 2px 4px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.7),
+    inset 0 -3px 6px rgba(0,0,0,0.25),
+    inset 0 0 16px rgba(255,255,255,0.12);
+}
+.lv-wrap .btn:hover:not(:disabled)::after { left: 150%; }
+.lv-wrap .btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    0 4px 10px -6px rgba(0,0,0,0.6),
+    inset 0 3px 8px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.lv-wrap .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.lv-wrap .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+
+/* ---------- MESSAGES ---------- */
+.lv-wrap .box {
+  position: relative;
+  margin-bottom: 16px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.08), transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 10px 24px -12px rgba(0,0,0,0.5);
+  animation: lv-rise .4s ease both;
+}
+.lv-wrap .error.box { background-color: rgba(255,70,70,0.10); border: 1px solid rgba(255,90,90,0.4); animation: lv-shake .4s ease; }
+.lv-wrap .lv-ok { border: 1px solid rgba(255,255,255,0.22); }
+
+@keyframes lv-rise { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes lv-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) {
+  .lv-wrap .head, .lv-wrap .card, .lv-wrap .box { animation: none; }
+}
+@media (max-width: 560px) {
+  .lv-wrap .card.form { padding: 18px 14px; }
+  .lv-wrap .lv-sec { padding: 16px 14px 18px; }
+}
+
+/* ---------- small helpers (were inline styles) ---------- */
+.lv-wrap .lv-list-acts { margin-top: 16px; }
+.lv-wrap .lv-sec .grid.lv-extra { margin-top: 22px; }
+.lv-wrap .box.lv-ok { color: var(--ok); }

@@ -218,7 +218,7 @@ export default function Salary({ role }) {
           <thead>
             <tr>
               {status === 'pending' && <th><input type="checkbox" checked={allPicked} onChange={toggleAll} /></th>}
-              <th>Host</th><th>Agency</th><th>Week</th><th>Diamonds</th><th>Level</th><th>Live</th>
+              <th>Host</th><th>Agency</th><th>Week</th><th>Coins received</th><th>Level</th><th>Live</th>
               <th>Host salary</th><th>Agent salary</th><th>Status</th>{status === 'pending' && <th></th>}
             </tr>
           </thead>
@@ -250,7 +250,8 @@ export default function Salary({ role }) {
             ))}
           </tbody>
         </table>
-            </div>
-    </div></>
+        </div>
+      </div>
+    </>
   );
 }

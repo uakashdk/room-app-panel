@@ -74,7 +74,7 @@ export default function PlanEditor({ policy, onSave, busy, saveLabel = 'Save tar
 
       <div className="card table-wrap">
         <table>
-          <thead><tr><th>Level</th><th>Target ({word}ly diamonds received)</th><th>Host salary (USD)</th><th></th></tr></thead>
+          <thead><tr><th>Level</th><th>Target ({word}ly gift COINS received)</th><th>Host salary (USD)</th><th></th></tr></thead>
           <tbody>
             {levels.map((l, i) => (
               <tr key={i}>

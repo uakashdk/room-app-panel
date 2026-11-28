@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import { api } from '../api';
+import './Setting.css';
 
 /* ------------------------------------------------------------------ */
 /* SAMPLE MODE for the parts that need your backend (sessions list,    */
@@ -27,20 +28,12 @@ const IDLE_KEY = 'dv-idle-minutes';
 const NOTIFY_KEY = 'dv-notify';
 const THEME_KEY = 'dv-theme';
 
-/* ------------------------------ theme ------------------------------ */
-const THEME_CSS = `
-html{transition:filter .3s ease,background-color .3s ease;}
-html[data-theme="light"]{filter:invert(1) hue-rotate(180deg);background:#fff;color-scheme:light;}
-html[data-theme="light"] img,html[data-theme="light"] video,html[data-theme="light"] canvas{filter:invert(1) hue-rotate(180deg);}
-`;
-export const getTheme = () => { try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } };
+
 export function applyTheme(t) {
-  if (!document.getElementById('dv-theme-css')) {
-    const s = document.createElement('style'); s.id = 'dv-theme-css'; s.textContent = THEME_CSS; document.head.appendChild(s);
-  }
   document.documentElement.setAttribute('data-theme', t);
   try { localStorage.setItem(THEME_KEY, t); } catch { /* blocked */ }
 }
+export const getTheme = () => { try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; } };
 export const applyStoredTheme = () => applyTheme(getTheme());
 
 /* ------------- auto sign-out after inactivity (used by App) -------- */
@@ -105,95 +98,6 @@ const device = () => {
   return o ? `${b} on ${o}` : b;
 };
 const when = (ms) => (ms ? new Date(ms).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-');
-
-/* ------------------------- glossy premium finish ------------------- */
-/* Translucent white/black layers only: colours and theme stay as is.   */
-const GLOSS_CSS = `
-.gloss-page{--acc:var(--accent,#F4C542);}
-
-/* ---------- cards: glass panel with a curved sheen on top ---------- */
-.gloss-page .card{position:relative;overflow:hidden;border-radius:22px;border:1px solid rgba(255,255,255,.20);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.45),0 18px 44px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.04);}
-.gloss-page .card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.17),rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 62%);}
-.gloss-page .card::after{content:'';position:absolute;left:-12%;right:-12%;top:0;height:44%;pointer-events:none;
-  border-radius:0 0 50% 50% / 0 0 100% 100%;
-  background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,0));}
-.gloss-page .card > *{position:relative;z-index:1;}
-
-/* ---------- tabs, buttons, pills ---------- */
-.gloss-page .tabs{gap:10px;}
-.gloss-page .tab,.gloss-page .btn,.gloss-page .pill,.gloss-page .seg button{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.20);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.30),inset 0 -8px 14px rgba(0,0,0,.26),0 6px 14px rgba(0,0,0,.42);}
-.gloss-page .tab::before,.gloss-page .btn::before,.gloss-page .pill::before,.gloss-page .seg button::before{content:'';position:absolute;left:0;right:0;top:0;height:52%;
-  background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,.02));pointer-events:none;border-radius:inherit;}
-.gloss-page .tab{cursor:pointer;border-radius:16px;transition:transform .15s ease,filter .15s ease;}
-.gloss-page .tab:hover{transform:translateY(-1px);filter:brightness(1.1);}
-.gloss-page .tab.active{border-color:rgba(255,255,255,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -8px 14px rgba(0,0,0,.2),0 0 18px rgba(244,197,66,.18),0 6px 14px rgba(0,0,0,.42);}
-.gloss-page .btn{border-radius:14px;font-weight:700;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease;}
-.gloss-page .btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -8px 14px rgba(0,0,0,.22),0 10px 20px rgba(0,0,0,.5);}
-.gloss-page .btn:active:not(:disabled){transform:translateY(0);}
-.gloss-page .btn:disabled{opacity:.55;cursor:not-allowed;}
-.gloss-page .pill{border-radius:999px;}
-.gloss-page .tab:focus-visible,.gloss-page .btn:focus-visible,.gloss-page .sw:focus-visible,.gloss-page .tswitch:focus-visible,.gloss-page .seg button:focus-visible{outline:2px solid rgba(255,255,255,.6);outline-offset:2px;}
-.gloss-page .box{position:relative;overflow:hidden;border-radius:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 8px 20px rgba(0,0,0,.4);}
-
-/* ---------- layout ---------- */
-.gloss-page .set-card{padding:8px 26px 14px;margin:20px 0 0;max-width:860px;}
-.gloss-page .set-title{margin:0;padding:18px 0 6px;font-size:17px;font-weight:700;}
-.gloss-page .set-note{margin:0 0 6px;}
-.gloss-page .set-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;
-  border-bottom:1px solid rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(0,0,0,.25);}
-.gloss-page .set-row:last-child{border-bottom:0;box-shadow:none;}
-.gloss-page .set-text b{display:block;font-size:15px;}
-.gloss-page .set-text span{display:block;margin-top:3px;font-size:13px;opacity:.65;}
-.gloss-page .set-val{font-weight:600;text-align:right;overflow-wrap:anywhere;}
-.gloss-page .set-actions{display:flex;flex-wrap:wrap;gap:12px;padding:14px 0 10px;}
-.gloss-page .sample-pill{font-size:11px;font-weight:700;letter-spacing:.06em;padding:5px 12px;}
-
-/* ---------- inputs: glass fields, spaced uppercase labels ---------- */
-.gloss-page .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;padding:10px 0;}
-.gloss-page .field{display:flex;flex-direction:column;gap:8px;}
-.gloss-page .field > span{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.7;}
-.gloss-page .field input{box-sizing:border-box;width:100%;height:50px;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
-  background-image:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,0) 60%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -12px 18px rgba(0,0,0,.28),0 3px 8px rgba(0,0,0,.34);
-  transition:border-color .15s ease,box-shadow .15s ease;}
-.gloss-page .field input:focus{outline:none; border-color:#f4c542; background-color:rgba(255,255,255,.07); box-shadow: 0 0 0 3px rgba(244,197,66,.18), 0 0 22px 2px rgba(244,197,66,.35), 0 10px 26px -6px rgba(244,197,66,.55), inset 0 2px 6px rgba(0,0,0,.25);}
-
-/* the small label turns gold too while its field is selected */
-.gloss-page .field:focus-within > span{color:#f4c542;opacity:1;}
-.gloss-page .field input:disabled{opacity:.55;}
-.gloss-page .sub{margin:12px 0 0;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.8;}
-
-/* ---------- switches ---------- */
-.gloss-page .sw{position:relative;flex:none;width:52px;height:30px;padding:0;cursor:pointer;border-radius:999px;border:1px solid rgba(255,255,255,.24);background:rgba(0,0,0,.5);overflow:hidden;
-  box-shadow:inset 0 2px 7px rgba(0,0,0,.65),inset 0 -1px 0 rgba(255,255,255,.12),0 4px 10px rgba(0,0,0,.4);transition:background .25s ease,box-shadow .25s ease;}
-.gloss-page .sw::before{content:'';position:absolute;left:0;right:0;top:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none;}
-.gloss-page .sw i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(180deg,#fff,#c3c8d4);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -3px 5px rgba(0,0,0,.15),0 3px 7px rgba(0,0,0,.55);transition:transform .25s cubic-bezier(.4,0,.2,1);}
-.gloss-page .sw.on{background:linear-gradient(180deg,rgba(244,197,66,.65),rgba(183,119,19,.65));box-shadow:inset 0 2px 7px rgba(0,0,0,.3),0 0 14px rgba(244,197,66,.28),0 4px 10px rgba(0,0,0,.4);}
-.gloss-page .sw.on i{transform:translateX(22px);}
-.gloss-page .sw:disabled{opacity:.5;cursor:not-allowed;}
-.gloss-page .tswitch{position:relative;flex:none;width:72px;height:38px;padding:0;cursor:pointer;border-radius:999px;border:1px solid rgba(255,255,255,.26);background:rgba(0,0,0,.5);overflow:hidden;
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.14),0 5px 14px rgba(0,0,0,.45);transition:background .3s ease;}
-.gloss-page .tswitch::before{content:'';position:absolute;left:0;right:0;top:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none;}
-.gloss-page .tswitch.on{background:linear-gradient(180deg,rgba(244,197,66,.65),rgba(183,119,19,.65));box-shadow:inset 0 2px 7px rgba(0,0,0,.35),0 0 18px rgba(244,197,66,.3),0 5px 14px rgba(0,0,0,.45);}
-.gloss-page .tknob{position:absolute;top:3px;left:3px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#2b2e36;background:linear-gradient(180deg,#fff,#c3c8d4);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -3px 6px rgba(0,0,0,.18),0 4px 9px rgba(0,0,0,.55);transition:transform .3s cubic-bezier(.4,0,.2,1);}
-.gloss-page .tswitch.on .tknob{transform:translateX(34px);}
-.gloss-page .tknob svg{width:16px;height:16px;}
-
-/* ---------- segmented choice ---------- */
-.gloss-page .seg{display:flex;flex-wrap:wrap;gap:10px;}
-.gloss-page .seg button{cursor:pointer;border-radius:14px;padding:9px 16px;font:inherit;color:inherit;background:rgba(255,255,255,.05);}
-.gloss-page .seg button.on{border-color:rgba(255,255,255,.38);background:linear-gradient(180deg,rgba(244,197,66,.5),rgba(183,119,19,.5));}
-
-.gloss-page .keybox{padding:12px 16px;margin:8px 0;border-radius:14px;border:1px dashed rgba(255,255,255,.28);
-  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0));font-family:monospace;font-size:13px;overflow-wrap:anywhere;user-select:all;}
-@media (max-width:560px){.gloss-page .set-row{flex-direction:column;align-items:flex-start;}.gloss-page .set-val{text-align:left;}.gloss-page .set-card{padding:6px 18px 12px;}}
-@media (prefers-reduced-motion:reduce){.gloss-page *{transition:none !important;animation:none !important;}}
-`;
 
 /* ----------------------------- small parts ------------------------- */
 const Moon = () => <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>;
@@ -516,8 +420,7 @@ export default function Settings({ staff, role }) {
   const go = (t) => { setError(''); setNote(''); setTab(t); };
 
   return (
-    <div className="gloss-page">
-      <style>{GLOSS_CSS}</style>
+    <div className="gloss-settings">
       <div className="head"><h1>Settings</h1></div>
 
       <div className="tabs">

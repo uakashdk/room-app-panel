@@ -231,7 +231,6 @@ const GLOSS_CSS = `
     color:#fff;
   }
 }
-}
 `;
 
 /** The host salary levels (the "host policy") and the withdrawal rules. Nothing about salary or commission is fixed in the code: it is set here. */
@@ -297,11 +296,12 @@ export default function HostPolicy({ role }) {
       <div className="head"><h1>Host policy</h1></div>
       <p className="muted pad">Only a Super admin can change the host policy.</p>
     </div>
-  ); 
-
-  return (
+  );
+  
+    return (
     <div className="gloss-page">
       <style>{GLOSS_CSS}</style>
+
       <div className="head"><h1>Host policy</h1></div>
       {error && <div className="error box">{error}</div>}
       {note && <div className="ok box">{note}</div>}
@@ -311,58 +311,35 @@ export default function HostPolicy({ role }) {
         <>
           <p className="muted small">
             These are the <b>default targets</b>, used by every agency that has no targets of its own. To give one agency its own targets (weekly or monthly, its own levels),
-            open <b>Agencies</b> and press <b>Targets</b> on that agency. A host who receives the target number of diamonds before the deadline reaches that level and earns its
+            open <b>Agencies</b> and press <b>Targets</b> on that agency. A host who receives the target number of gift coins before the deadline reaches that level and earns its
             host salary. The <b>agency commission</b> is not a second salary: it is a % of the host's withdrawal, paid to the agency owner's PayPal (set per agency).
           </p>
           <PlanEditor policy={policy} onSave={savePolicy} busy={busy} saveLabel="Save default targets" />
           <div style={{ height: 24 }} />
 
           <div className="head"><h1 style={{ fontSize: 20 }}>Withdrawal rules</h1></div>
-          <div className="card form wd">
-            <div className="wd-row">
-              <label className="wd-check">
-                <input type="checkbox" checked={w.enabled} onChange={(e) => setW({ ...w, enabled: e.target.checked })} />
-                <span>Withdrawals are on</span>
-              </label>
-              <label className="wd-field">
-                <span>Smallest (USD)</span>
-                <input value={w.min} onChange={(e) => setW({ ...w, min: e.target.value })} />
-              </label>
-              <label className="wd-field">
-                <span>Largest single (USD)</span>
-                <input value={w.max} onChange={(e) => setW({ ...w, max: e.target.value })} />
-              </label>
-              <label className="wd-field">
-                <span>Most per person per day (USD)</span>
-                <input value={w.daily} onChange={(e) => setW({ ...w, daily: e.target.value })} />
-              </label>
+          <div className="card form" style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <input type="checkbox" checked={w.enabled} onChange={(e) => setW({ ...w, enabled: e.target.checked })} /> Withdrawals are on
+            </label>
+            <label>Smallest (USD)<input value={w.min} onChange={(e) => setW({ ...w, min: e.target.value })} style={{ width: 110 }} /></label>
+            <label>Largest single (USD)<input value={w.max} onChange={(e) => setW({ ...w, max: e.target.value })} style={{ width: 110 }} /></label>
+            <label>Most per person per day (USD)<input value={w.daily} onChange={(e) => setW({ ...w, daily: e.target.value })} style={{ width: 110 }} /></label>
+            <div style={{ display: 'flex', gap: 14 }}>
+              {METHODS.map(([k, label]) => (
+                <label key={k} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  <input
+                    type="checkbox" checked={w.methods.includes(k)}
+                    onChange={(e) => setW({ ...w, methods: e.target.checked ? [...w.methods, k] : w.methods.filter((m) => m !== k) })}
+                  /> {label}
+                </label>
+              ))}
             </div>
-
-            <div className="wd-row wd-bottom">
-              <div className="wd-methods">
-                {METHODS.map(([k, label]) => (
-                  <label key={k}>
-                    <input
-                      type="checkbox"
-                      checked={w.methods.includes(k)}
-                      onChange={(e) =>
-                        setW({
-                          ...w,
-                          methods: e.target.checked
-                            ? [...w.methods, k]
-                            : w.methods.filter((m) => m !== k),
-                        })
-                      }
-                    />
-                    <span>{label}</span>
-                  </label>
-                ))}
-              </div>
-              <button className="btn" onClick={saveWithdrawal} disabled={busy}>Save withdrawal rules</button>
-            </div>
+            <button className="btn" onClick={saveWithdrawal} disabled={busy}>Save withdrawal rules</button>
           </div>
         </>
       )}
     </div>
   );
 }
+

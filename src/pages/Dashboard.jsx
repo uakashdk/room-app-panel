@@ -255,13 +255,13 @@ function CoinBars({ data }) {
     <>
       <div className="legend" style={{ marginBottom: 10 }}>
         <span><i style={{ background: '#F4C542' }} />Coins bought</span>
-        <span><i style={{ background: '#e8e6f2' }} />Purchases</span>
+        <span><i style={{ background: '#8b7cf6' }} />Purchases</span>
       </div>
       <div className="chart-wrap">
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Coin purchases">
           <defs>
             <linearGradient id="bg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#F4C542" /><stop offset="100%" stopColor="#B77713" /></linearGradient>
-            <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#9a98ad" /></linearGradient>
+            <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#A99CFF" /><stop offset="100%" stopColor="#6D5BD0" /></linearGradient>
           </defs>
           {[0, 0.25, 0.5, 0.75, 1].map((t) => (
             <g key={t}>
@@ -271,10 +271,18 @@ function CoinBars({ data }) {
           ))}
           {data.map((d, i) => {
             const cx = p.l + slot * i + slot / 2;
+            const on = hv === i;
             return (
-              <g key={i} opacity={hv == null || hv === i ? 1 : 0.45} style={{ transition: 'opacity .15s' }}>
-                {rect(cx - bw - 2, yC(d.coins), bw, 'url(#bg1)')}
-                {rect(cx + 2, yN(d.count), bw, 'url(#bg2)')}
+              <g key={i}>
+                <g style={{
+                  opacity: hv == null || on ? 1 : 0.7,
+                  transform: on ? 'translateY(-4px)' : 'none',
+                  filter: on ? 'drop-shadow(0 8px 10px rgba(183,119,19,.45))' : 'none',
+                  transition: 'opacity .15s, transform .15s, filter .15s',
+                }}>
+                  {rect(cx - bw - 2, yC(d.coins), bw, 'url(#bg1)')}
+                  {rect(cx + 2, yN(d.count), bw, 'url(#bg2)')}
+                </g>
                 <text className="ax" x={cx} y={H - 8} textAnchor="middle">{dshort(d.date)}</text>
                 <rect x={p.l + slot * i} y={p.t} width={slot} height={ih} fill="transparent" onMouseEnter={() => setHv(i)} onMouseLeave={() => setHv(null)} />
               </g>
